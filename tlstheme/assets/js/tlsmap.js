@@ -300,77 +300,81 @@ const sidebarListings = document.getElementById('map-sidebar-listings');
                 return res.text();
             })
             .then(text => {
-                console.log('Raw response:', text.substring(0, 500));
+                console.log('Raw response:', text.substring(0, 1000));
                 try {
                     const res = JSON.parse(text);
                     console.log('Parsed JSON response:', JSON.stringify(res).substring(0, 500));
-                const skeleton = document.getElementById('map-skeleton');
-                if (skeleton) skeleton.style.display = 'none';
+                    const skeleton = document.getElementById('map-skeleton');
+                    if (skeleton) skeleton.style.display = 'none';
 
-                if (res.success && res.data && res.data.properties) {
-                    console.log('Processing', res.data.properties.length, 'properties from AJAX');
-                    res.data.properties.forEach(prop => {
-                        const lat = parseFloat(prop.lat || 0);
-                        const lng = parseFloat(prop.lng || 0);
-                        
-                        const pData = {
-                            dbId: prop.id,
-                            name: prop.name,
-                            area: prop.area || '0',
-                            status: prop.status || 'available',
-                            image: prop.image || '',
-                            price: prop.price || 0,
-                            grant_no: prop.grant || 'N/A',
-                            link: prop.link || '#',
-                            lat: lat,
-                            lng: lng,
-                            boundary: prop.boundary
-                        };
-                        
-                        allProperties.push(pData);
-                        console.log('Added property:', prop.name, 'lat:', lat, 'lng:', lng);
+                    if (res.success && res.data && res.data.properties) {
+                        console.log('Processing', res.data.properties.length, 'properties from AJAX');
+                        res.data.properties.forEach(prop => {
+                            const lat = parseFloat(prop.lat || 0);
+                            const lng = parseFloat(prop.lng || 0);
+                            
+                            const pData = {
+                                dbId: prop.id,
+                                name: prop.name,
+                                area: prop.area || '0',
+                                status: prop.status || 'available',
+                                image: prop.image || '',
+                                price: prop.price || 0,
+                                grant_no: prop.grant || 'N/A',
+                                link: prop.link || '#',
+                                lat: lat,
+                                lng: lng,
+                                boundary: prop.boundary
+                            };
+                            
+                            allProperties.push(pData);
+                            console.log('Added property:', prop.name, 'lat:', lat, 'lng:', lng);
 
-                        if (prop.boundary && lat !== 0 && lng !== 0) {
-                            try {
-                                let geoData = typeof prop.boundary === 'string' ? JSON.parse(prop.boundary) : prop.boundary;
-                                if (geoData && geoData.type === 'Polygon' && geoData.coordinates) {
-                                    geoData.properties = pData;
-                                    lotLayer.addData(geoData);
-                                }
-                            } catch (e) { console.warn('Boundary error:', e); }
-                        } else if (lat !== 0 && lng !== 0) {
-                            L.circleMarker([lat, lng], {
-                                radius: 10,
-                                fillColor: statusColors[pData.status]?.fill || "#16a34a",
-                                color: "#fff",
-                                weight: 2
-                            }).addTo(map).on('click', (e) => {
-                                handlePropertyClick(pData, [lat, lng]);
-                            });
-                        }
-                    });
-                } else if (res.data && res.data.manual) {
-                    console.log('Processing', res.data.manual.length, 'manual lots from AJAX');
-                    res.data.manual.forEach(prop => {
-                        const pData = {
-                            dbId: prop.id,
-                            name: prop.lot_name,
-                            area: prop.area_size || '0',
-                            status: prop.lot_status || 'available',
-                            image: prop.lot_image || '',
-                            price: prop.lot_price || 0,
-                            grant_no: prop.lot_grant || 'N/A',
-                            link: '#',
-                            lat: 0,
-                            lng: 0
-                        };
-                        allProperties.push(pData);
-                    });
+                            if (prop.boundary && lat !== 0 && lng !== 0) {
+                                try {
+                                    let geoData = typeof prop.boundary === 'string' ? JSON.parse(prop.boundary) : prop.boundary;
+                                    if (geoData && geoData.type === 'Polygon' && geoData.coordinates) {
+                                        geoData.properties = pData;
+                                        lotLayer.addData(geoData);
+                                    }
+                                } catch (e) { console.warn('Boundary error:', e); }
+                            } else if (lat !== 0 && lng !== 0) {
+                                L.circleMarker([lat, lng], {
+                                    radius: 10,
+                                    fillColor: statusColors[pData.status]?.fill || "#16a34a",
+                                    color: "#fff",
+                                    weight: 2
+                                }).addTo(map).on('click', (e) => {
+                                    handlePropertyClick(pData, [lat, lng]);
+                                });
+                            }
+                        });
+                    } else if (res.data && res.data.manual) {
+                        console.log('Processing', res.data.manual.length, 'manual lots from AJAX');
+                        res.data.manual.forEach(prop => {
+                            const pData = {
+                                dbId: prop.id,
+                                name: prop.lot_name,
+                                area: prop.area_size || '0',
+                                status: prop.lot_status || 'available',
+                                image: prop.lot_image || '',
+                                price: prop.lot_price || 0,
+                                grant_no: prop.lot_grant || 'N/A',
+                                link: '#',
+                                lat: 0,
+                                lng: 0
+                            };
+                            allProperties.push(pData);
+                        });
+                    }
+                    
+                    console.log('Calling renderSidebar with', allProperties.length, 'properties');
+                    renderSidebar(allProperties);
+                    console.log('Done loading properties');
+                } catch (err) {
+                    console.error('JSON parse error:', err);
+                    console.error('Raw text that failed:', text.substring(0, 500));
                 }
-                
-                console.log('Calling renderSidebar with', allProperties.length, 'properties');
-                renderSidebar(allProperties);
-                console.log('Done loading properties');
             })
             .catch(err => {
                 console.error('AJAX error:', err);
