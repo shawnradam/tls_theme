@@ -156,17 +156,19 @@ add_action('wp_footer', function() {
     ?>
     <script>
     console.log('=== TLS_LOTS PHP Debug ===');
+    console.log('Posts found: <?php echo count($tanah_posts); ?>');
+    console.log('Lots generated: <?php echo count($lots); ?>');
     </script>
-    <?php
-    if (count($tanah_posts) === 0) { ?>
+    <?php if (count($tanah_posts) === 0): ?>
     <script>
-    console.warn('No tanah posts found! Check CPT registration.');
+    console.warn('WARNING: No tanah posts found! Check CPT registration.');
+    console.warn('is_front_page: <?php echo is_front_page() ? 'true' : 'false'; ?>');
     </script>
-    <?php } else { ?>
+    <?php else: ?>
     <script>
     var TLS_LOTS = <?php echo json_encode($lots, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
-    console.log('TLS_LOTS loaded:', TLS_LOTS.length, 'properties');
-    console.log('TLS_LOTS sample:', JSON.stringify(TLS_LOTS[0] ?? 'empty'));
+    console.log('TLS_LOTS created:', TLS_LOTS.length, 'properties');
+    console.log('TLS_LOTS JSON sample:', JSON.stringify(TLS_LOTS[0] ?? 'empty').substring(0, 300));
     </script>
-    <?php }
+    <?php endif;
 }, 5);

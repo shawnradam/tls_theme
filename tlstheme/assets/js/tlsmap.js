@@ -187,9 +187,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         function renderSidebar(props) {
-            if (!sidebarListings) return;
+            console.log('=== renderSidebar called with', props.length, 'properties ===');
+            if (!sidebarListings) {
+                console.log('ERROR: sidebarListings element not found!');
+                return;
+            }
             sidebarListings.innerHTML = '';
             resultsCountEl.innerText = props.length;
+            console.log('Rendering', props.length, 'property cards');
 
             props.forEach(p => {
                 const statusInfo = statusColors[p.status] || statusColors.available;
@@ -318,19 +323,27 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         // Check if it's a simple array (not GeoJSON)
                         if (Array.isArray(geoData) && geoData.length > 0) {
-                            // Convert [[lat,lng], [lat,lng],...] to GeoJSON Polygon
-                            // Note: GeoJSON uses [lng, lat] order
-                            if (typeof geoData[0] === 'object' && !geoData[0].type) {
-                                const polygonCoords = [geoData.map(function(coord) {
-                                    // coord[0] = lat, coord[1] = lng in your data
-                                    // GeoJSON needs [lng, lat] so we swap
-                                    return [coord[1], coord[0]]; // [lng, lat]
-                                })];
+                            // Check if it's simple coordinate array like [[lat,lng], [lat,lng],...]
+                            if (typeof geoData[0] === 'object' && !geoData[0].type && typeof geoData[0][0] === 'number') {
+                                // It's a simple coordinate array [[lng,lat], [lng,lat],...]
+                                // Need to close the polygon by repeating first point
+                                const closedCoords = geoData.slice();
+                                if (closedCoords.length > 0) {
+                                    const first = closedCoords[0];
+                                    const last = closedCoords[closedCoords.length - 1];
+                                    if (first[0] !== last[0] || first[1] !== last[1]) {
+                                        closedCoords.push(first);
+                                    }
+                                }
+                                
+                                const polygonCoords = [closedCoords];
                                 geoData = {
                                     type: 'Polygon',
                                     coordinates: polygonCoords
                                 };
-                                console.log('Converted simple array to GeoJSON Polygon');
+                                console.log('Converted simple array to GeoJSON Polygon, coords:', JSON.stringify(polygonCoords).substring(0, 150));
+                            } else {
+                                console.log('Array format not recognized, first item:', JSON.stringify(geoData[0]).substring(0, 100));
                             }
                         }
                         
@@ -366,6 +379,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             console.log('Total markers added:', allProperties.length);
+            console.log('allProperties:', JSON.stringify(allProperties));
             tlsDebug.push('Total processed: ' + allProperties.length);
             tlsDebug.push('Calling renderSidebar');
             renderSidebar(allProperties);
