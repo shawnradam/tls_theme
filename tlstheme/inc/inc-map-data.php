@@ -152,13 +152,21 @@ add_action('wp_footer', function() {
         $lots[] = $lot_data;
     }
 
-    $log('Total lots prepared: ' . count($lots));
-    $log('JSON output length: ' . strlen(json_encode($lots)));
     $log('=== TLS_LOTS Generation End ===');
     ?>
     <script>
-    var TLS_LOTS = <?php echo json_encode($lots, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
-    console.log('TLS_LOTS loaded:', TLS_LOTS.length, 'properties');
+    console.log('=== TLS_LOTS PHP Debug ===');
     </script>
     <?php
+    if (count($tanah_posts) === 0) { ?>
+    <script>
+    console.warn('No tanah posts found! Check CPT registration.');
+    </script>
+    <?php } else { ?>
+    <script>
+    var TLS_LOTS = <?php echo json_encode($lots, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+    console.log('TLS_LOTS loaded:', TLS_LOTS.length, 'properties');
+    console.log('TLS_LOTS sample:', JSON.stringify(TLS_LOTS[0] ?? 'empty'));
+    </script>
+    <?php }
 }, 5);

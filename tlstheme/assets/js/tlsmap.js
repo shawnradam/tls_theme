@@ -272,26 +272,39 @@ document.addEventListener('DOMContentLoaded', function() {
         tlsDebug.push('TLS_LOTS defined: ' + (typeof TLS_LOTS !== 'undefined'));
         tlsDebug.push('TLS_LOTS length: ' + (typeof TLS_LOTS !== 'undefined' ? TLS_LOTS.length : 'N/A'));
 
+        // Check TLS_LOTS status
+        console.log('=== TLS Map Debug ===');
+        console.log('TLS_LOTS type:', typeof TLS_LOTS);
+        console.log('TLS_LOTS length:', typeof TLS_LOTS !== 'undefined' ? TLS_LOTS.length : 'N/A');
+        if (typeof TLS_LOTS !== 'undefined' && TLS_LOTS.length > 0) {
+            console.log('Sample TLS_LOTS[0]:', JSON.stringify(TLS_LOTS[0]));
+        }
+        console.log('====================');
+
         if (typeof TLS_LOTS !== 'undefined' && TLS_LOTS.length > 0) {
             tlsDebug.push('Using TLS_LOTS as source');
             const skeleton = document.getElementById('map-skeleton');
             if (skeleton) skeleton.style.display = 'none';
 
             TLS_LOTS.forEach(function(prop, idx) {
-                tlsDebug.push('Prop ' + idx + ': ' + prop.title + ' lat=' + prop.lat + ' lng=' + prop.lng + ' no_coords=' + (prop.no_coords ? 'yes' : 'no'));
+                const lat = parseFloat(prop.lat || prop.latitude || 0);
+                const lng = parseFloat(prop.lng || prop.longitude || 0);
+                console.log('Processing prop ' + idx + ':', prop.name || prop.title, 'lat:', lat, 'lng:', lng, 'boundary:', prop.boundary ? 'yes' : 'no');
+                
                 const pData = {
-                    dbId: prop.dbId || prop.id,
-                    name: prop.name || prop.title,
-                    area: prop.area || prop.ekar,
+                    dbId: prop.dbId || prop.id || prop.ID,
+                    name: prop.name || prop.title || prop.post_title,
+                    area: prop.area || prop.ekar || prop.size,
                     status: prop.status || 'available',
-                    image: prop.image || prop.img,
-                    price: prop.price,
-                    grant_no: prop.grant || prop.geran || prop.grant_no,
-                    link: prop.link || prop.permalink,
-                    lat: parseFloat(prop.lat || 0),
-                    lng: parseFloat(prop.lng || 0),
-                    boundary: prop.boundary ? (typeof prop.boundary === 'string' ? prop.boundary : JSON.stringify(prop.boundary)) : null
+                    image: prop.image || prop.img || prop.thumbnail,
+                    price: prop.price || 0,
+                    grant_no: prop.grant || prop.geran || prop.grant_no || prop.type,
+                    link: prop.link || prop.permalink || prop.url,
+                    lat: lat,
+                    lng: lng,
+                    boundary: prop.boundary
                 };
+                
                 allProperties.push(pData);
 
                 if (prop.boundary && prop.boundary.length > 0) {
@@ -300,10 +313,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (geoData && geoData.type) {
                             geoData.properties = pData;
                             lotLayer.addData(geoData);
+                            console.log('Added GeoJSON boundary for:', prop.name || prop.title);
                         }
                     } catch (e) { console.warn('Boundary parse error:', e); }
-                } else if (prop.lat && prop.lng && parseFloat(prop.lat) !== 0 && parseFloat(prop.lng) !== 0) {
-                    L.circleMarker([parseFloat(prop.lat), parseFloat(prop.lng)], {
+                } else if (lat !== 0 && lng !== 0) {
+                    L.circleMarker([lat, lng], {
                         radius: 8,
                         fillColor: statusColors[pData.status]?.fill || "#1a73e8",
                         color: "#fff",
@@ -314,10 +328,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     .addTo(map)
                     .on('click', (e) => {
                         L.DomEvent.stopPropagation(e);
-                        handlePropertyClick(pData, [parseFloat(prop.lat), parseFloat(prop.lng)]);
+                        handlePropertyClick(pData, [lat, lng]);
                     });
+                    console.log('Added circle marker for:', prop.name || prop.title);
                 }
             });
+            console.log('Total markers added:', allProperties.length);
             tlsDebug.push('Total processed: ' + allProperties.length);
             tlsDebug.push('Calling renderSidebar');
             renderSidebar(allProperties);
