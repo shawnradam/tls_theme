@@ -1,8 +1,14 @@
 document.addEventListener('DOMContentLoaded', function() {
     const mapContainers = document.querySelectorAll('.tlsmap-container');
-    const sidebarListings = document.getElementById('map-sidebar-listings');
+const sidebarListings = document.getElementById('map-sidebar-listings');
     const resultsCountEl = document.getElementById('map-results-count');
     const sidebarSearch = document.getElementById('map-sidebar-search');
+    
+    console.log('=== DOM Elements Check ===');
+    console.log('sidebarListings found:', sidebarListings !== null);
+    console.log('resultsCountEl found:', resultsCountEl !== null);
+    console.log('sidebarSearch found:', sidebarSearch !== null);
+    console.log('=======================');
 
     const colors = tlsmapConfig.colors || {
         available: '#16a34a',
@@ -281,168 +287,86 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('=== TLS Map Debug ===');
         console.log('TLS_LOTS type:', typeof TLS_LOTS);
         console.log('TLS_LOTS length:', typeof TLS_LOTS !== 'undefined' ? TLS_LOTS.length : 'N/A');
-        if (typeof TLS_LOTS !== 'undefined' && TLS_LOTS.length > 0) {
-            console.log('Sample TLS_LOTS[0]:', JSON.stringify(TLS_LOTS[0]));
-        }
         console.log('====================');
 
-        if (typeof TLS_LOTS !== 'undefined' && TLS_LOTS.length > 0) {
-            tlsDebug.push('Using TLS_LOTS as source');
-            const skeleton = document.getElementById('map-skeleton');
-            if (skeleton) skeleton.style.display = 'none';
+        // Use AJAX to load data from server - this ensures data is always loaded
+        console.log('Loading data via AJAX...');
+        fetch(`${tlsmapConfig.ajaxUrl}?action=tls_get_lots`)
+            .then(res => res.json())
+            .then(res => {
+                console.log('AJAX response:', JSON.stringify(res).substring(0, 500));
+                const skeleton = document.getElementById('map-skeleton');
+                if (skeleton) skeleton.style.display = 'none';
 
-            TLS_LOTS.forEach(function(prop, idx) {
-                const lat = parseFloat(prop.lat || prop.latitude || 0);
-                const lng = parseFloat(prop.lng || prop.longitude || 0);
-                console.log('Processing prop ' + idx + ':', prop.name || prop.title, 'lat:', lat, 'lng:', lng, 'boundary:', prop.boundary ? 'yes' : 'no');
-                
-                const pData = {
-                    dbId: prop.dbId || prop.id || prop.ID,
-                    name: prop.name || prop.title || prop.post_title,
-                    area: prop.area || prop.ekar || prop.size,
-                    status: prop.status || 'available',
-                    image: prop.image || prop.img || prop.thumbnail,
-                    price: prop.price || 0,
-                    grant_no: prop.grant || prop.geran || prop.grant_no || prop.type,
-                    link: prop.link || prop.permalink || prop.url,
-                    lat: lat,
-                    lng: lng,
-                    boundary: prop.boundary
-                };
-                
-                allProperties.push(pData);
-
-                // Handle boundary - convert simple array to GeoJSON if needed
-                console.log('DEBUG: prop.boundary for', prop.name || prop.title, ':', JSON.stringify(prop.boundary).substring(0, 200));
-                if (prop.boundary) {
-                    try {
-                        let geoData = prop.boundary;
-                        if (typeof geoData === 'string') {
-                            geoData = JSON.parse(geoData);
-                        }
+                if (res.success && res.data && res.data.properties) {
+                    console.log('Processing', res.data.properties.length, 'properties from AJAX');
+                    res.data.properties.forEach(prop => {
+                        const lat = parseFloat(prop.lat || 0);
+                        const lng = parseFloat(prop.lng || 0);
                         
-                        // Check if it's a simple array (not GeoJSON)
-                        if (Array.isArray(geoData) && geoData.length > 0) {
-                            // Check if it's simple coordinate array like [[lat,lng], [lat,lng],...]
-                            if (typeof geoData[0] === 'object' && !geoData[0].type && typeof geoData[0][0] === 'number') {
-                                // It's a simple coordinate array [[lng,lat], [lng,lat],...]
-                                // Need to close the polygon by repeating first point
-                                const closedCoords = geoData.slice();
-                                if (closedCoords.length > 0) {
-                                    const first = closedCoords[0];
-                                    const last = closedCoords[closedCoords.length - 1];
-                                    if (first[0] !== last[0] || first[1] !== last[1]) {
-                                        closedCoords.push(first);
-                                    }
-                                }
-                                
-                                const polygonCoords = [closedCoords];
-                                geoData = {
-                                    type: 'Polygon',
-                                    coordinates: polygonCoords
-                                };
-                                console.log('Converted simple array to GeoJSON Polygon, coords:', JSON.stringify(polygonCoords).substring(0, 150));
-                            } else {
-                                console.log('Array format not recognized, first item:', JSON.stringify(geoData[0]).substring(0, 100));
-                            }
-                        }
+                        const pData = {
+                            dbId: prop.id,
+                            name: prop.name,
+                            area: prop.area || '0',
+                            status: prop.status || 'available',
+                            image: prop.image || '',
+                            price: prop.price || 0,
+                            grant_no: prop.grant || 'N/A',
+                            link: prop.link || '#',
+                            lat: lat,
+                            lng: lng,
+                            boundary: prop.boundary
+                        };
                         
-                        if (geoData && geoData.type === 'Polygon' && geoData.coordinates) {
-                            geoData.properties = pData;
-                            lotLayer.addData(geoData);
-                            console.log('Added Polygon boundary for:', prop.name || prop.title);
-                        } else if (geoData && geoData.type === 'Point' && geoData.coordinates) {
-                            geoData.properties = pData;
-                            lotLayer.addData(geoData);
-                            console.log('Added Point boundary for:', prop.name || prop.title);
-                        } else {
-                            console.log('Boundary format not recognized:', geoData);
-                        }
-                    } catch (e) { console.warn('Boundary parse error:', e); }
-                } else if (lat !== 0 && lng !== 0) {
-                    L.circleMarker([lat, lng], {
-                        radius: 8,
-                        fillColor: statusColors[pData.status]?.fill || "#1a73e8",
-                        color: "#fff",
-                        weight: 2,
-                        opacity: 1,
-                        fillOpacity: 1
-                    })
-                    .addTo(map)
-                    .on('click', (e) => {
-                        L.DomEvent.stopPropagation(e);
-                        handlePropertyClick(pData, [lat, lng]);
-                    });
-                    console.log('Added circle marker for:', prop.name || prop.title);
-                } else {
-                    console.log('No coordinates or boundary for:', prop.name || prop.title);
-                }
-            });
-            console.log('Total markers added:', allProperties.length);
-            console.log('allProperties:', JSON.stringify(allProperties));
-            tlsDebug.push('Total processed: ' + allProperties.length);
-            tlsDebug.push('Calling renderSidebar');
-            renderSidebar(allProperties);
-            tlsDebug.push('renderSidebar done');
+                        allProperties.push(pData);
+                        console.log('Added property:', prop.name, 'lat:', lat, 'lng:', lng);
 
-            // Send debug log to server
-            fetch(tlsmapConfig.ajaxUrl + '?action=tls_log_debug', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: 'data=' + encodeURIComponent(JSON.stringify(tlsDebug))
-            }).catch(function() {});
-        } else {
-            tlsDebug.push('TLS_LOTS empty/undefined, using AJAX fallback');
-            // Fallback to AJAX if TLS_LOTS is not available
-            fetch(`${tlsmapConfig.ajaxUrl}?action=tls_get_lots`)
-                .then(res => res.json())
-                .then(res => {
-                    const skeleton = document.getElementById('map-skeleton');
-                    if (skeleton) skeleton.style.display = 'none';
-
-                    if (res.success && res.data && res.data.properties) {
-                        res.data.properties.forEach(prop => {
-                            const pData = {
-                                dbId: prop.id,
-                                name: prop.name,
-                                area: prop.area,
-                                status: prop.status,
-                                image: prop.image,
-                                price: prop.price,
-                                grant_no: prop.grant,
-                                link: prop.link,
-                                lat: prop.lat,
-                                lng: prop.lng,
-                                boundary: prop.boundary
-                            };
-                            allProperties.push(pData);
-
-                            if (prop.boundary) {
-                                try {
-                                    const geoData = JSON.parse(prop.boundary);
+                        if (prop.boundary && lat !== 0 && lng !== 0) {
+                            try {
+                                let geoData = typeof prop.boundary === 'string' ? JSON.parse(prop.boundary) : prop.boundary;
+                                if (geoData && geoData.type === 'Polygon' && geoData.coordinates) {
                                     geoData.properties = pData;
                                     lotLayer.addData(geoData);
-                                } catch (e) {}
-                            } else if (prop.lat && prop.lng) {
-                                L.circleMarker([prop.lat, prop.lng], {
-                                    radius: 8,
-                                    fillColor: statusColors[prop.status]?.fill || "#1a73e8",
-                                    color: "#fff",
-                                    weight: 2,
-                                    opacity: 1,
-                                    fillOpacity: 1
-                                })
-                                .addTo(map)
-                                .on('click', (e) => {
-                                    L.DomEvent.stopPropagation(e);
-                                    handlePropertyClick(pData, [prop.lat, prop.lng]);
-                                });
-                            }
-                        });
-                        renderSidebar(allProperties);
-                    }
-                });
-        }
+                                }
+                            } catch (e) { console.warn('Boundary error:', e); }
+                        } else if (lat !== 0 && lng !== 0) {
+                            L.circleMarker([lat, lng], {
+                                radius: 10,
+                                fillColor: statusColors[pData.status]?.fill || "#16a34a",
+                                color: "#fff",
+                                weight: 2
+                            }).addTo(map).on('click', (e) => {
+                                handlePropertyClick(pData, [lat, lng]);
+                            });
+                        }
+                    });
+                } else if (res.data && res.data.manual) {
+                    console.log('Processing', res.data.manual.length, 'manual lots from AJAX');
+                    res.data.manual.forEach(prop => {
+                        const pData = {
+                            dbId: prop.id,
+                            name: prop.lot_name,
+                            area: prop.area_size || '0',
+                            status: prop.lot_status || 'available',
+                            image: prop.lot_image || '',
+                            price: prop.lot_price || 0,
+                            grant_no: prop.lot_grant || 'N/A',
+                            link: '#',
+                            lat: 0,
+                            lng: 0
+                        };
+                        allProperties.push(pData);
+                    });
+                }
+                
+                console.log('Calling renderSidebar with', allProperties.length, 'properties');
+                renderSidebar(allProperties);
+                console.log('Done loading properties');
+            })
+            .catch(err => {
+                console.error('AJAX error:', err);
+            });
+    });
 
         if (sidebarSearch) {
             sidebarSearch.oninput = (e) => {
