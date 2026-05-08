@@ -108,10 +108,11 @@ add_action('wp_footer', function() {
         $log('  thumbnail: ' . ($thumbnail ? 'yes' : 'no'));
 
         // Build lot data with all fields tlsmap.js expects
+        // Note: lat and lng are stored as swapped in hosting database, swap them back
         $lot_data = [
             'dbId' => $post->ID,
-            'lat' => floatval($lat ?: 0),
-            'lng' => floatval($lng ?: 0),
+            'lat' => floatval($lng ?: 0),  // lat from DB actually contains lng value
+            'lng' => floatval($lat ?: 0),  // lng from DB actually contains lat value
             'name' => $post->post_title,
             'title' => $post->post_title,
             'price' => intval($price ?: 0),
@@ -129,18 +130,15 @@ add_action('wp_footer', function() {
         ];
 
         // If no coords but has boundary, extract from first point
+        // Your data stores as [[lat, lng], ...] format
         if ((empty($lat) || empty($lng) || floatval($lat) == 0) && !empty($boundary_array)) {
             $first_point = $boundary_array[0];
             if (is_array($first_point) && count($first_point) >= 2) {
-                // GeoJSON format: [lng, lat]
-                $lot_data['lng'] = floatval($first_point[0]);
-                $lot_data['lat'] = floatval($first_point[1]);
-            } else {
-                // Simple format: [lat, lng]
+                // Simple format: [lat, lng] - swap for GeoJSON which expects [lng, lat]
                 $lot_data['lat'] = floatval($first_point[0]);
                 $lot_data['lng'] = floatval($first_point[1]);
             }
-            $log('  Using boundary fallback coords: ' . $lot_data['lat'] . ', ' . $lot_data['lng']);
+            $log('  Using boundary fallback coords: lat=' . $lot_data['lat'] . ', lng=' . $lot_data['lng']);
         }
 
         // Mark no_coords but still include for sidebar
