@@ -307,13 +307,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 allProperties.push(pData);
 
-                if (prop.boundary && prop.boundary.length > 0) {
+                // Handle boundary - convert simple array to GeoJSON if needed
+                if (prop.boundary) {
                     try {
-                        const geoData = typeof prop.boundary === 'string' ? JSON.parse(prop.boundary) : prop.boundary;
-                        if (geoData && geoData.type) {
+                        let geoData = prop.boundary;
+                        if (typeof geoData === 'string') {
+                            geoData = JSON.parse(geoData);
+                        }
+                        
+                        // Check if it's a simple array (not GeoJSON)
+                        if (Array.isArray(geoData) && geoData.length > 0) {
+                            // Convert simple [[lng,lat], [lng,lat],...] to GeoJSON Polygon
+                            if (typeof geoData[0] === 'object' && !geoData[0].type) {
+                                // It's a simple coordinate array
+                                const polygonCoords = [geoData.map(function(coord) {
+                                    return [coord[0], coord[1]]; // [lng, lat]
+                                })];
+                                geoData = {
+                                    type: 'Polygon',
+                                    coordinates: polygonCoords
+                                };
+                                console.log('Converted simple array to GeoJSON Polygon');
+                            }
+                        }
+                        
+                        if (geoData && geoData.type === 'Polygon' && geoData.coordinates) {
                             geoData.properties = pData;
                             lotLayer.addData(geoData);
-                            console.log('Added GeoJSON boundary for:', prop.name || prop.title);
+                            console.log('Added Polygon boundary for:', prop.name || prop.title);
+                        } else if (geoData && geoData.type === 'Point' && geoData.coordinates) {
+                            geoData.properties = pData;
+                            lotLayer.addData(geoData);
+                            console.log('Added Point boundary for:', prop.name || prop.title);
                         }
                     } catch (e) { console.warn('Boundary parse error:', e); }
                 } else if (lat !== 0 && lng !== 0) {
