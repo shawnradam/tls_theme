@@ -1,3 +1,6 @@
+// TLS Map v3.0 - Direct TLS_LOTS loading
+// This is the NEW version - uploaded May 9 2026
+console.log('=== TLS Map v3.0 LOADED ===');
 document.addEventListener('DOMContentLoaded', function() {
     const mapContainers = document.querySelectorAll('.tlsmap-container');
     const sidebarListings = document.getElementById('map-sidebar-listings');
