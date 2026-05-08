@@ -1,0 +1,642 @@
+/**
+ * Land Development Calculator - Tanah Lot Sabah Theme
+ * Mobile-First Responsive Design
+ */
+
+/* ========== Variables ========== */
+:root {
+    --ldc-primary: #0f172a;
+    --ldc-accent: #16a34a;
+    --ldc-text: #0f172a;
+    --ldc-text-light: #64748b;
+    --ldc-border: #e2e8f0;
+    --ldc-background: #f8fafc;
+    --ldc-white: #ffffff;
+    --ldc-radius: 8px;
+    --ldc-radius-lg: 12px;
+    --ldc-shadow: 0 2px 8px rgba(0,0,0,.08);
+    --ldc-shadow-lg: 0 8px 24px rgba(0,0,0,.12);
+}
+
+/* ========== Global Styles ========== */
+.ldc-calculator-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 16px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--ldc-text);
+    background: var(--ldc-background);
+}
+
+/* ========== Sections ========== */
+.ldc-section {
+    background: var(--ldc-white);
+    border: 1px solid var(--ldc-border);
+    border-radius: var(--ldc-radius);
+    margin-bottom: 16px;
+    overflow: hidden;
+    box-shadow: var(--ldc-shadow);
+}
+
+.ldc-section-header {
+    padding: 16px 20px;
+    background: var(--ldc-background);
+    border-bottom: 1px solid var(--ldc-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.ldc-section-header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--ldc-text);
+}
+
+.ldc-section-body {
+    padding: 20px;
+}
+
+/* ========== Form Elements ========== */
+.ldc-row {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.ldc-col-6,
+.ldc-col-12 {
+    width: 100%;
+}
+
+.ldc-form-group {
+    margin-bottom: 16px;
+}
+
+.ldc-form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--ldc-text);
+}
+
+.ldc-input {
+    width: 100%;
+    padding: 14px 12px;
+    border: 1px solid var(--ldc-border);
+    border-radius: var(--ldc-radius);
+    font-size: 1rem;
+    font-family: inherit;
+    color: var(--ldc-text);
+    background: var(--ldc-white);
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.ldc-input:focus {
+    outline: none;
+    border-color: var(--ldc-accent);
+}
+
+/* ========== Buttons ========== */
+.ldc-btn {
+    display: inline-block;
+    padding: 14px 24px;
+    border: none;
+    border-radius: var(--ldc-radius);
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: inherit;
+    text-align: center;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    width: 100%;
+}
+
+.ldc-btn-primary {
+    background: var(--ldc-accent);
+    color: var(--ldc-white);
+}
+
+.ldc-btn-primary:hover {
+    opacity: 0.9;
+}
+
+.ldc-btn-secondary {
+    background: var(--ldc-white);
+    color: var(--ldc-accent);
+    border: 2px solid var(--ldc-accent);
+}
+
+.ldc-btn-large {
+    padding: 16px 32px;
+    font-size: 1.1rem;
+}
+
+/* ========== Toggle Switch ========== */
+.ldc-toggle-switch {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.ldc-toggle-slider {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background: #ccc;
+    border-radius: 24px;
+    transition: background 0.3s;
+}
+
+.ldc-toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: 50%;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.3s;
+}
+
+.ldc-toggle-switch input:checked + .ldc-toggle-slider {
+    background: var(--ldc-accent);
+}
+
+.ldc-toggle-switch input:checked + .ldc-toggle-slider::before {
+    transform: translateX(20px);
+}
+
+.ldc-toggle-label {
+    font-size: 0.85rem;
+    color: var(--ldc-text-light);
+}
+
+/* ========== Item Rows ========== */
+.ldc-item-row {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--ldc-border);
+}
+
+.ldc-item-row:last-child {
+    border-bottom: none;
+}
+
+.ldc-item-select label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.ldc-item-select input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.ldc-item-details {
+    display: none;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--ldc-border);
+}
+
+.ldc-item-quantity {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.ldc-item-quantity label {
+    font-size: 0.85rem;
+    color: var(--ldc-text-light);
+}
+
+.ldc-quantity-input {
+    width: 100px;
+    padding: 10px;
+    border: 1px solid var(--ldc-border);
+    border-radius: var(--ldc-radius);
+    font-size: 1rem;
+    text-align: center;
+}
+
+.ldc-unit {
+    font-size: 0.85rem;
+    color: var(--ldc-text-light);
+}
+
+.ldc-item-price,
+.ldc-item-total {
+    margin-top: 10px;
+}
+
+.ldc-item-price label,
+.ldc-item-total label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--ldc-text-light);
+    margin-bottom: 4px;
+}
+
+.ldc-subtotal-display {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--ldc-accent);
+}
+
+.ldc-category-desc {
+    font-size: 0.9rem;
+    color: var(--ldc-text-light);
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+/* ========== Grand Total ========== */
+.ldc-grand-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    margin-top: 20px;
+    background: var(--ldc-primary);
+    color: var(--ldc-white);
+    border-radius: var(--ldc-radius);
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.ldc-grand-total-amount {
+    font-size: 1.5rem;
+}
+
+/* ========== Modal ========== */
+.ldc-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.ldc-modal-content {
+    background: var(--ldc-white);
+    border-radius: var(--ldc-radius-lg);
+    max-width: 450px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.ldc-modal-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--ldc-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+.ldc-modal-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.ldc-modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--ldc-text-light);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ldc-modal-body {
+    padding: 20px;
+}
+
+.confirm-section {
+    margin-bottom: 20px;
+}
+
+.confirm-section h4 {
+    font-size: 0.95rem;
+    color: var(--ldc-text-light);
+    margin-bottom: 8px;
+}
+
+.confirm-section p {
+    margin: 4px 0;
+    font-size: 0.95rem;
+}
+
+.confirm-total {
+    padding: 16px;
+    background: var(--ldc-background);
+    border-radius: var(--ldc-radius);
+    text-align: center;
+    font-size: 1.25rem;
+    margin: 20px 0;
+}
+
+/* ========== Loading ========== */
+.ldc-loading-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    z-index: 99999;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.ldc-loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid var(--ldc-border);
+    border-top-color: var(--ldc-accent);
+    border-radius: 50%;
+    animation: ldc-spin 1s linear infinite;
+}
+
+@keyframes ldc-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ========== Sticky Launcher ========== */
+.ldc-sticky-btn {
+    position: fixed;
+    bottom: 90px;
+    right: 16px;
+    background: var(--ldc-accent);
+    color: var(--ldc-white);
+    padding: 14px 20px;
+    border-radius: 50px;
+    cursor: pointer;
+    z-index: 98;
+    font-weight: 600;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.4);
+}
+
+/* ========== Responsive - Tablet ========== */
+@media (min-width: 768px) {
+    .ldc-calculator-wrapper {
+        padding: 0 24px;
+    }
+    
+    .ldc-section {
+        margin-bottom: 24px;
+    }
+    
+    .ldc-section-header {
+        padding: 20px 24px;
+    }
+    
+    .ldc-section-header h2 {
+        font-size: 1.25rem;
+    }
+    
+    .ldc-section-body {
+        padding: 24px;
+    }
+    
+    .ldc-row {
+        flex-direction: row;
+        gap: 20px;
+    }
+    
+    .ldc-col-6 {
+        flex: 1;
+    }
+    
+    .ldc-btn {
+        width: auto;
+    }
+    
+    .ldc-item-quantity {
+        flex-wrap: nowrap;
+    }
+    
+    .ldc-grand-total {
+        font-size: 1.25rem;
+    }
+    
+    .ldc-grand-total-amount {
+        font-size: 1.75rem;
+    }
+    
+    .ldc-sticky-btn {
+        bottom: 30px;
+        right: 30px;
+    }
+}
+
+/* ========== Responsive - Desktop ========== */
+@media (min-width: 1024px) {
+    .ldc-calculator-wrapper {
+        padding: 0 32px;
+    }
+    
+    .ldc-modal-content {
+        max-width: 500px;
+    }
+}
+
+/* ========== Leaflet Map Popup ========== */
+.leaflet-popup-content-wrapper {
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.15);
+}
+
+.leaflet-popup-content {
+    margin: 12px;
+    width: auto !important;
+}
+
+.leaflet-popup-tip {
+    background: #fff;
+}
+
+.tls-popup .leaflet-popup-close-button {
+    color: #64748b;
+    font-size: 20px;
+    padding: 8px;
+}
+
+/* ========== Calculator Modal ========== */
+.calc-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+}
+
+.calc-modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.calc-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+}
+
+.calc-modal-content {
+    position: relative;
+    background: #fff;
+    width: 95%;
+    max-width: 700px;
+    max-height: 90vh;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.calc-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    flex-shrink: 0;
+    overflow-anchor: none;
+}
+
+.calc-modal-header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.calc-modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #64748b;
+    cursor: pointer;
+    padding: 0;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.calc-modal-close:hover {
+    background: #e2e8f0;
+}
+
+.calc-modal-body {
+    overflow-y: auto;
+    flex: 1;
+    padding: 20px;
+    background: #f8fafc;
+    overflow-anchor: auto;
+    min-height: 0;
+}
+
+.calc-modal-body .ldc-calculator-wrapper {
+    max-width: 100%;
+    padding: 0;
+}
+
+.calc-modal-body .ldc-section-body {
+    display: block !important;
+}
+
+.calc-modal-body .ldc-loading-overlay {
+    position: fixed !important;
+    z-index: 10001;
+}
+
+.calc-modal-body .ldc-modal {
+    z-index: 10002;
+}
+
+/* ========== Floating Calculator Button ========== */
+.floating-calc-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: #16a34a;
+    color: #fff;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    z-index: 999;
+    font-weight: 600;
+    font-size: 1rem;
+    box-shadow: 0 4px 20px rgba(22, 163, 74, 0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.floating-calc-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(22, 163, 74, 0.5);
+}
+
+@media (max-width: 767px) {
+    .floating-calc-btn {
+        bottom: 80px;
+        right: 16px;
+        padding: 12px 20px;
+        font-size: 0.9rem;
+    }
+    
+    .calc-modal-content {
+        width: 100%;
+        height: 100%;
+        max-height: 100%;
+        border-radius: 0;
+    }
+    
+    .calc-modal-body {
+        padding: 16px;
+    }
+}
