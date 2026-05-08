@@ -291,10 +291,19 @@ const sidebarListings = document.getElementById('map-sidebar-listings');
 
         // Use AJAX to load data from server - this ensures data is always loaded
         console.log('Loading data via AJAX...');
+        console.log('AJAX URL:', tlsmapConfig.ajaxUrl);
+        
         fetch(`${tlsmapConfig.ajaxUrl}?action=tls_get_lots`)
-            .then(res => res.json())
             .then(res => {
-                console.log('AJAX response:', JSON.stringify(res).substring(0, 500));
+                console.log('Response status:', res.status);
+                console.log('Response headers:', res.headers);
+                return res.text();
+            })
+            .then(text => {
+                console.log('Raw response:', text.substring(0, 500));
+                try {
+                    const res = JSON.parse(text);
+                    console.log('Parsed JSON response:', JSON.stringify(res).substring(0, 500));
                 const skeleton = document.getElementById('map-skeleton');
                 if (skeleton) skeleton.style.display = 'none';
 
