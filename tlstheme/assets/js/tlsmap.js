@@ -308,6 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 allProperties.push(pData);
 
                 // Handle boundary - convert simple array to GeoJSON if needed
+                console.log('DEBUG: prop.boundary for', prop.name || prop.title, ':', JSON.stringify(prop.boundary).substring(0, 200));
                 if (prop.boundary) {
                     try {
                         let geoData = prop.boundary;
@@ -317,11 +318,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         // Check if it's a simple array (not GeoJSON)
                         if (Array.isArray(geoData) && geoData.length > 0) {
-                            // Convert simple [[lng,lat], [lng,lat],...] to GeoJSON Polygon
+                            // Convert [[lat,lng], [lat,lng],...] to GeoJSON Polygon
+                            // Note: GeoJSON uses [lng, lat] order
                             if (typeof geoData[0] === 'object' && !geoData[0].type) {
-                                // It's a simple coordinate array
                                 const polygonCoords = [geoData.map(function(coord) {
-                                    return [coord[0], coord[1]]; // [lng, lat]
+                                    // coord[0] = lat, coord[1] = lng in your data
+                                    // GeoJSON needs [lng, lat] so we swap
+                                    return [coord[1], coord[0]]; // [lng, lat]
                                 })];
                                 geoData = {
                                     type: 'Polygon',
@@ -339,6 +342,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             geoData.properties = pData;
                             lotLayer.addData(geoData);
                             console.log('Added Point boundary for:', prop.name || prop.title);
+                        } else {
+                            console.log('Boundary format not recognized:', geoData);
                         }
                     } catch (e) { console.warn('Boundary parse error:', e); }
                 } else if (lat !== 0 && lng !== 0) {
@@ -356,6 +361,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         handlePropertyClick(pData, [lat, lng]);
                     });
                     console.log('Added circle marker for:', prop.name || prop.title);
+                } else {
+                    console.log('No coordinates or boundary for:', prop.name || prop.title);
                 }
             });
             console.log('Total markers added:', allProperties.length);
