@@ -24,7 +24,7 @@ function tls_enqueue_frontend_scripts() {
     wp_enqueue_style('google-material-icons', 'https://fonts.googleapis.com/icon?family=Material+Icons', [], null);
     wp_enqueue_style('tls-calculator', get_template_directory_uri() . '/assets/css/calculator.css', [], TLS_VERSION);
 
-    // Map Assets
+// Map Assets
     wp_enqueue_style('leaflet-css', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css', [], '1.9.4');
     wp_enqueue_style('leaflet-fullscreen-css', 'https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css', ['leaflet-css'], '1.0.1');
     wp_enqueue_style('tlsmap-css', get_template_directory_uri() . '/assets/css/tlsmap.css', ['leaflet-css'], TLS_VERSION);
@@ -34,10 +34,7 @@ function tls_enqueue_frontend_scripts() {
     wp_enqueue_script('leaflet-fullscreen-js', 'https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js', ['leaflet-js'], '1.0.1', true);
     wp_enqueue_script('leaflet-rotate', 'https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate.js', ['leaflet-js'], '0.2.8', true);
     
-    // Force cache busting with timestamp
-$tlsmap_version = TLS_VERSION . '.' . time();
-
-wp_enqueue_script('tlsmap-js', get_template_directory_uri() . '/assets/js/tlsmap.js', ['leaflet-js', 'esri-leaflet-js'], $tlsmap_version, true);
+    wp_enqueue_script('tlsmap-js', get_template_directory_uri() . '/assets/js/tlsmap.js', ['leaflet-js', 'esri-leaflet-js'], TLS_VERSION, true);
     wp_localize_script('tlsmap-js', 'tlsmapConfig', [
         'ajaxUrl' => admin_url('admin-ajax.php'),
         'themeUri' => get_template_directory_uri(),

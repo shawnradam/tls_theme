@@ -108,11 +108,11 @@ add_action('wp_footer', function() {
         $log('  thumbnail: ' . ($thumbnail ? 'yes' : 'no'));
 
         // Build lot data with all fields tlsmap.js expects
-        // Note: lat and lng are stored as swapped in hosting database, swap them back
+        // lat and lng are stored correctly in hosting database
         $lot_data = [
             'dbId' => $post->ID,
-            'lat' => floatval($lng ?: 0),  // lat from DB actually contains lng value
-            'lng' => floatval($lat ?: 0),  // lng from DB actually contains lat value
+            'lat' => floatval($lat ?: 0),
+            'lng' => floatval($lng ?: 0),
             'name' => $post->post_title,
             'title' => $post->post_title,
             'price' => intval($price ?: 0),
