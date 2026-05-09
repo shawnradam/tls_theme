@@ -46,58 +46,32 @@ $video_url = $main_video ? get_post_meta($main_video->ID, 'hero_video_url', true
     </div>
 </section>
 
-<!-- INTEGRATED LAND MAP PORTAL (THE NEW MAP) -->
+<!-- INTEGRATED LAND MAP PORTAL -->
 <section class="tls-map-portal-section" id="map-portal">
     <div class="map-portal-container">
-        <!-- Sidebar - PHP Generated Properties -->
+        <!-- Sidebar (populated by tlsmap.js via AJAX) -->
         <div class="map-portal-sidebar">
             <div class="sidebar-header">
                 <h3>Hartanah di Kawasan Ini</h3>
-                <div class="results-count">
-                    <?php
-                    $sidebar_query = new WP_Query(['post_type' => 'tanah', 'posts_per_page' => -1, 'post_status' => 'publish']);
-                    $total_count = $sidebar_query->found_posts;
-                    echo '<span id="map-results-count">' . $total_count . '</span> hartanah dijumpai';
-                    ?>
-                </div>
+                <div class="results-count"><span id="map-results-count">0</span> hartanah dijumpai</div>
             </div>
             <div class="sidebar-filters">
                 <div class="search-box-minimal">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    <input type="text" id="map-sidebar-search" placeholder="Cari nama, geran, daerah..." onkeyup="filterMapProperties()">
+                    <input type="text" id="map-sidebar-search" placeholder="Cari nama, geran, daerah...">
                 </div>
             </div>
             <div class="sidebar-listings" id="map-sidebar-listings">
-                <?php if ($sidebar_query->have_posts()) : ?>
-                    <?php while ($sidebar_query->have_posts()) : $sidebar_query->the_post();
-                        $price = get_post_meta(get_the_ID(), '_tanah_harga', true);
-                        $ekar = get_post_meta(get_the_ID(), '_tanah_keluasan', true);
-                        $geran = get_post_meta(get_the_ID(), '_tanah_jenis_geran', true);
-                        $thumbnail = get_the_post_thumbnail_url(get_the_ID(), 'medium') ?: get_template_directory_uri() . '/assets/images/placeholder.jpeg';
-                        $status = get_post_meta(get_the_ID(), '_tanah_status', true) ?: 'available';
-                    ?>
-                    <div class="portal-listing-card" data-id="<?php the_ID(); ?>" data-name="<?php echo strtolower(get_the_title()); ?>">
-                        <img src="<?php echo esc_url($thumbnail); ?>" class="portal-card-thumb" alt="<?php the_title(); ?>">
-                        <div class="portal-card-info">
-                            <div class="portal-card-top">
-                                <span class="portal-card-status <?php echo $status; ?>"><?php echo ucfirst($status); ?></span>
-                            </div>
-                            <h4 class="portal-card-title"><?php the_title(); ?></h4>
-                            <div class="portal-card-price">RM <?php echo number_format((int)$price); ?></div>
-                            <div class="portal-card-meta"><?php echo $ekar; ?> ekar • <?php echo $geran; ?></div>
-                            <a href="<?php the_permalink(); ?>" class="btn-detail" style="margin-top: 8px; display: inline-block;">View Details</a>
-                        </div>
-                    </div>
-                    <?php endwhile; wp_reset_postdata(); ?>
-                <?php else : ?>
-                    <p style="text-align: center; padding: 20px;">Tiada hartanah dijumpai.</p>
-                <?php endif; ?>
+                <div class="sidebar-loading">
+                    <div class="spinner"></div>
+                    <span>Memuatkan hartanah...</span>
+                </div>
             </div>
         </div>
 
         <!-- Map Area -->
         <div class="map-portal-main">
-            <div id="map-skeleton" class="skeleton-box" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; display: none;"></div>
+            <div id="map-skeleton" class="skeleton-box" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10;"></div>
             <?php echo do_shortcode('[tlsmap height="100%" width="100%"]'); ?>
             
             <!-- Mobile Toggle -->
@@ -109,27 +83,6 @@ $video_url = $main_video ? get_post_meta($main_video->ID, 'hero_video_url', true
         </div>
     </div>
 </section>
-
-<script>
-function filterMapProperties() {
-    var input = document.getElementById('map-sidebar-search');
-    var filter = input.value.toLowerCase();
-    var cards = document.querySelectorAll('.portal-listing-card[data-name]');
-    var count = 0;
-    
-    cards.forEach(function(card) {
-        var name = card.getAttribute('data-name');
-        if (name.includes(filter)) {
-            card.style.display = '';
-            count++;
-        } else {
-            card.style.display = 'none';
-        }
-    });
-    
-    document.getElementById('map-results-count').textContent = count;
-}
-</script>
 
 <!-- RECENT LISTINGS (All Properties Below Map) -->
 <section class="listings-section" id="property-listings">
