@@ -1,6 +1,12 @@
 <?php 
 get_header();
 
+// Add body class to disable fullscreen footer (normal scroll behavior)
+add_filter('body_class', function($classes) {
+    $classes[] = 'disable-fullscreen-footer';
+    return $classes;
+});
+
 // Include WordPress plugin functions for is_plugin_active()
 include_once(ABSPATH . 'wp-admin/includes/plugin.php');
 

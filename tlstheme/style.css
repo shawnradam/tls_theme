@@ -2143,13 +2143,20 @@ footer.site-footer {
   transition: min-height 0.5s ease-in-out;
 }
 
-/* Mobile Fullscreen Footer */
+/* Mobile Fullscreen Footer - Only active when body has enable-fullscreen-footer class */
+/* Pages using this: Agent listing pages, property listing pages */
+/* Pages NOT using this (normal scroll): front-page.php, single-tanah.php */
 @media (max-width: 768px) {
-  footer.site-footer {
+  body:not(.enable-fullscreen-footer) footer.site-footer {
+    position: relative !important;
+    min-height: auto;
+  }
+  
+  body.enable-fullscreen-footer footer.site-footer {
     min-height: 300px;
   }
   
-  footer.site-footer.is-at-bottom {
+  body.enable-fullscreen-footer footer.site-footer.is-at-bottom {
     min-height: 100vh;
     height: 100vh;
     position: fixed;
