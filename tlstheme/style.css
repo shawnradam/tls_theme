@@ -2143,9 +2143,25 @@ footer.site-footer {
   transition: min-height 0.5s ease-in-out;
 }
 
-/* Mobile Fullscreen Footer - Only active when body has enable-fullscreen-footer class */
+/* Fullscreen Footer - active on all devices when body has enable-fullscreen-footer class */
 /* Pages using this: Agent listing pages, property listing pages */
 /* Pages NOT using this (normal scroll): front-page.php, single-tanah.php */
+@media (min-width: 768px) {
+  body.enable-fullscreen-footer footer.site-footer.is-at-bottom {
+    min-height: 100vh;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-bottom: 80px;
+  }
+}
+
 @media (max-width: 768px) {
   body:not(.enable-fullscreen-footer) footer.site-footer {
     position: relative !important;

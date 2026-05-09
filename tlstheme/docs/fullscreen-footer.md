@@ -2,43 +2,42 @@
 
 ## Overview
 
-The theme has a "fullscreen footer" feature that, on mobile devices, expands the footer to fill the entire screen when the user scrolls to the bottom. This was designed for agent listing pages and property listing pages.
+The theme has a "fullscreen footer" feature that expands the footer to fill the entire screen when the user scrolls to the bottom. This works on **all devices** (mobile, tablet, desktop) when the body has `enable-fullscreen-footer` class.
 
-However, for **front-page.php** and **single-tanah.php**, this behavior causes issues with scrolling (footer "sticks" and doesn't flow normally). This document explains how the system works and how to maintain it.
+**Important:** The footer is NOT sticky - it only becomes fullscreen when you reach the bottom of the page. When you scroll up, it returns to normal flow.
 
 ## How It Works
 
 ### CSS Control (style.css)
 
-The fullscreen footer CSS is wrapped in a media query that only applies when the body has the `enable-fullscreen-footer` class:
+The fullscreen footer CSS is applied on all screen sizes when the body has the `enable-fullscreen-footer` class:
 
 ```css
-@media (max-width: 768px) {
-  /* Normal pages: footer is always relative (not sticky) */
-  body:not(.enable-fullscreen-footer) footer.site-footer {
-    position: relative !important;
-    min-height: auto;
-  }
-  
-  /* Pages with enable-fullscreen-footer: footer expands on scroll */
+/* Desktop & Tablet (768px+) */
+@media (min-width: 768px) {
   body.enable-fullscreen-footer footer.site-footer.is-at-bottom {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
+    min-height: 100vh;
     height: 100vh;
+    position: fixed;
     /* ... */
+  }
+}
+
+/* Mobile (under 768px) */
+@media (max-width: 768px) {
+  body.enable-fullscreen-footer footer.site-footer.is-at-bottom {
+    /* Same fullscreen styles */
   }
 }
 ```
 
 ### JavaScript Control (footer.php)
 
-The JavaScript only activates the fullscreen logic if the body has `enable-fullscreen-footer`:
+The JavaScript activates on all devices when body has `enable-fullscreen-footer`:
 
 ```javascript
 var footer = document.querySelector('footer.site-footer');
-if (window.innerWidth < 768 && footer && document.body.classList.contains('enable-fullscreen-footer')) {
+if (footer && document.body.classList.contains('enable-fullscreen-footer')) {
     window.addEventListener('scroll', function() {
         if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 50) {
             footer.classList.add('is-at-bottom');

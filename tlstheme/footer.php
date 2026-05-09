@@ -283,9 +283,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // 2. Footer Scroll Logic - Only for pages with enable-fullscreen-footer class
+    // 2. Footer Fullscreen Logic - Works on all devices when body has enable-fullscreen-footer class
     var footer = document.querySelector('footer.site-footer');
-    if (window.innerWidth < 768 && footer && document.body.classList.contains('enable-fullscreen-footer')) {
+    if (footer && document.body.classList.contains('enable-fullscreen-footer')) {
         window.addEventListener('scroll', function() {
             if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 50) {
                 footer.classList.add('is-at-bottom');
