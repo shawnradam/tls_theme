@@ -1,4 +1,9 @@
-<?php get_header(); ?>
+<?php 
+get_header();
+
+// Include WordPress plugin functions for is_plugin_active()
+include_once(ABSPATH . 'wp-admin/includes/plugin.php');
+?>
 
 <?php while (have_posts()) : the_post();
     $harga = get_post_meta(get_the_ID(), '_tanah_harga', true) ?: 0;
@@ -408,6 +413,7 @@
 <!-- Property Location Map Section -->
 <?php if (!empty($lat) && !empty($lng) || !empty($boundary)): ?>
 <section class="property-map-section" id="propertyMapSection">
+    <?php if (is_plugin_active('tlsmap/tlsmap.php')): ?>
     <div class="container">
         <h2 class="section-title" style="font-weight:300;">Lokasi Tanah</h2>
         <div style="position: relative; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
@@ -418,6 +424,7 @@
             ?>
         </div>
     </div>
+    <?php endif; ?>
 </section>
 
 <style>

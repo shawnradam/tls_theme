@@ -62,9 +62,10 @@ require_once TLS_THEME_DIR . '/inc/ajax/auth-handlers.php';
 require_once TLS_THEME_DIR . '/inc/license-system.php';
 require_once TLS_THEME_DIR . '/inc/fab-system.php';
 require_once TLS_THEME_DIR . '/inc/agent-tools/agent-tools.php';
-require_once TLS_THEME_DIR . '/inc/map-system-unified.php';
-require_once TLS_THEME_DIR . '/inc/admin-map-pages.php';
-require_once TLS_THEME_DIR . '/inc/inc-map-data.php';
+// Map system moved to tls-map plugin (see wp-content/plugins/tls-map/)
+// require_once TLS_THEME_DIR . '/inc/map-system-unified.php';
+// require_once TLS_THEME_DIR . '/inc/admin-map-pages.php';
+// require_once TLS_THEME_DIR . '/inc/inc-map-data.php';
 
 // Initialize FAB System
 global $tls_fab_system;

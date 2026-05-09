@@ -4605,8 +4605,9 @@ add_action('wp_footer', function() {
 
 // ============================================
 // OUTPUT MAP DATA FOR FRONTPAGE
+// (MOVED TO PLUGIN - tlsmap plugin)
 // ============================================
-require_once get_template_directory() . '/inc/inc-map-data.php';
+// require_once get_template_directory() . '/inc/inc-map-data.php';
 
 // ============================================
 // AJAX: GET TEMPLATE ITEMS

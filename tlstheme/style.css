@@ -1,11 +1,14 @@
 /*
-Theme Name: tanahlotsabah
+Theme Name: Tanah Lot Sabah
 Theme URI: https://tanahlotsabah.com
-Author: tanahlotsabah / shawnradam
-Description: Premium real estate theme for tanahlotsabah, this theme has been equipped with the latest maps with boundary, cinematic, well maps and easy navigations.
-Version: 2.1.2
+Author: Tanah Lot Sabah / Shawn Radam
+Description: Premium real estate WordPress theme for Tanah Lot Sabah property listings. Features include property listings with tanah CPT, loan calculator, land development calculator, agent management, and lead tracking. Map functionality has been moved to the TLS Map plugin for better maintainability.
+Version: 5.0.0
+Requires at least: 6.0
+Tested up to: 6.4
 License: GPL-2.0+
 Text Domain: tanahlotsabah
+Tags: real-estate, properties, land, sabah, malaysia
 */
 
 /* ============================================
@@ -5629,18 +5632,32 @@ nav.primary.active .menu-container {
         display: block;
         position: absolute;
         bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
+        left: 20px;
+        right: 20px;
         z-index: 1000;
     }
 
     .mobile-map-toggle button {
-        background: #0f172a;
+        width: 100%;
+        background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
         color: white;
-        padding: 12px 24px;
+        padding: 14px 24px;
         border-radius: 50px;
         border: none;
         font-weight: 600;
+        font-size: 15px;
         box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .mobile-map-toggle button:hover {
+        background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+    }
+    
+    .mobile-map-toggle button i {
+        font-size: 18px;
     }
 }

@@ -1,69 +1,49 @@
 <?php 
 get_header();
 
-// Include WordPress plugin functions for is_plugin_active()
-include_once(ABSPATH . 'wp-admin/includes/plugin.php');
-
-// Add global map functions to footer
-add_action('wp_footer', 'tls_frontpage_global_scripts');
-
-function tls_frontpage_global_scripts() {
+// Global functions for front page
+add_action('wp_footer', function() {
     ?>
     <script>
-    // Global functions - ALWAYS available on front page
+    // Global scroll to map function
     window.scrollToMap = function(event) {
-        if (event) {
-            event.preventDefault();
-        }
+        if (event) event.preventDefault();
         var mapSection = document.getElementById('map-portal');
         if (mapSection) {
             mapSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     };
 
+    // Mobile toggle for map/list view
     window.toggleMobilePortalView = function() {
         var sidebar = document.querySelector('.map-portal-sidebar');
         var btn = document.getElementById('portal-view-btn');
         if (!sidebar || !btn) return;
         
-        var isShowing = sidebar.classList.contains('show');
-        
-        if (isShowing) {
+        if (sidebar.classList.contains('show')) {
             sidebar.classList.remove('show');
-            btn.innerHTML = '<i class="fas fa-list"></i> Senarai';
-            btn.classList.remove('map-hidden');
-            var mapSection = document.getElementById('map-portal');
-            if (mapSection) {
-                mapSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
+            btn.innerHTML = '<i class="fas fa-list"></i> Lihat Senarai';
             setTimeout(function() {
-                if (window.tlsMap) {
-                    window.tlsMap.invalidateSize();
-                }
+                if (window.tlsMap) window.tlsMap.invalidateSize();
             }, 400);
         } else {
             sidebar.classList.add('show');
-            btn.innerHTML = '<i class="fas fa-chevron-left"></i> Peta';
-            btn.classList.add('map-hidden');
-            var sidebarEl = document.querySelector('.map-portal-sidebar');
-            if (sidebarEl) {
-                sidebarEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
+            btn.innerHTML = '<i class="fas fa-map"></i> Lihat Peta';
+            sidebar.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     };
 
+    // Initialize - sidebar hidden on mobile by default
     document.addEventListener('DOMContentLoaded', function() {
-        var btn = document.getElementById('portal-view-btn');
         var sidebar = document.querySelector('.map-portal-sidebar');
-        if (btn && sidebar) {
+        var btn = document.getElementById('portal-view-btn');
+        if (btn && sidebar && window.innerWidth <= 768) {
             sidebar.classList.remove('show');
-            btn.innerHTML = '<i class="fas fa-list"></i> Senarai';
-            btn.classList.remove('map-hidden');
         }
     });
     </script>
     <?php
-}
+});
 ?>
 
 <!-- HERO SECTION -->
@@ -95,7 +75,8 @@ $final_poster = $video_poster ?: 'https://tanahlotsabah.com/wp-content/uploads/2
     </video>
     
     <div class="hero-content">
-        <h1 class="hero-title">Cari Lot Tanah Impian Anda<br>di <span class="highlight">Tanah Lot Sabah</span></h1>
+        <span class="hero-badge">Tanah Lot Sabah</span>
+        <h1>Cari Lot Tanah Impian Anda<br>di <span class="highlight">Tanah Lot Sabah</span></h1>
         <p class="hero-subtitle">Terokai lot tanah premium dengan sempadan yang disahkan melalui sistem peta interaktif kami.</p>
         
         <div class="hero-actions">
@@ -116,9 +97,9 @@ $final_poster = $video_poster ?: 'https://tanahlotsabah.com/wp-content/uploads/2
 </section>
 
 <!-- INTEGRATED LAND MAP PORTAL -->
-<?php if (is_plugin_active('tlsmap/tlsmap.php')): ?>
 <section class="tls-map-portal-section" id="map-portal">
     <div class="map-portal-container">
+        <!-- Sidebar with Properties -->
         <div class="map-portal-sidebar">
             <div class="sidebar-header">
                 <h3>Hartanah di Kawasan Ini</h3>
@@ -138,22 +119,21 @@ $final_poster = $video_poster ?: 'https://tanahlotsabah.com/wp-content/uploads/2
             </div>
         </div>
 
+        <!-- Map Area -->
         <div class="map-portal-main">
             <div id="map-skeleton" class="skeleton-box" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10;"></div>
             <?php echo do_shortcode('[tlsmap height="100%" width="100%"]'); ?>
             
             <div class="mobile-map-toggle">
                 <button onclick="toggleMobilePortalView()" id="portal-view-btn">
-                    <i class="fas fa-list"></i> Senarai
+                    <i class="fas fa-list"></i> Lihat Senarai
                 </button>
             </div>
         </div>
     </div>
 </section>
-<?php endif; ?>
 
-<!-- RECENT LISTINGS -->
-<?php if (!is_plugin_active('tlsmap/tlsmap.php')): ?>
+<!-- ALL LISTINGS SECTION -->
 <section class="listings-section" id="property-listings">
     <div class="container">
         <div class="section-header">
@@ -199,16 +179,18 @@ $final_poster = $video_poster ?: 'https://tanahlotsabah.com/wp-content/uploads/2
                     $ekar = get_post_meta(get_the_ID(), '_tanah_keluasan', true) ?: 0;
                     $geran = get_post_meta(get_the_ID(), '_tanah_jenis_geran', true) ?: 'CL';
                     $status = strtolower(get_post_meta(get_the_ID(), '_tanah_status', true) ?: 'available');
-                    $thumbnail = get_the_post_thumbnail_url(get_the_ID(), 'medium') ?: 'https://tanahlotsabah.com/wp-content/themes/tlstheme/assets/images/placeholder.jpeg';
+                    $thumbnail = get_the_post_thumbnail_url(get_the_ID(), 'medium') ?: get_template_directory_uri() . '/assets/images/placeholder.jpeg';
             ?>
                 <div class="listing-card" data-title="<?php echo esc_attr(strtolower(get_the_title())); ?>" data-status="<?php echo esc_attr($status); ?>" data-geran="<?php echo esc_attr($geran); ?>">
-                    <div class="listing-image">
-                        <img src="<?php echo esc_url($thumbnail); ?>" alt="<?php echo esc_attr(get_the_title()); ?>">
-                        <span class="listing-status <?php echo esc_attr($status); ?>"><?php echo ucfirst($status); ?></span>
-                    </div>
-                    <div class="listing-content">
-                        <h3><?php the_title(); ?></h3>
-                        <div class="listing-price">RM <?php echo number_format($harga); ?></div>
+                    <a href="<?php the_permalink(); ?>" class="listing-image-link">
+                        <div class="listing-image">
+                            <img src="<?php echo esc_url($thumbnail); ?>" alt="<?php echo esc_attr(get_the_title()); ?>">
+                            <span class="listing-status <?php echo esc_attr($status); ?>"><?php echo ucfirst($status); ?></span>
+                        </div>
+                    </a>
+                    <div class="listing-body">
+                        <h3><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
+                        <div class="listing-price">RM <?php echo number_format((int)$harga); ?></div>
                         <div class="listing-meta">
                             <span><i class="fas fa-expand"></i> <?php echo $ekar; ?> ekar</span>
                             <span><i class="fas fa-file-alt"></i> <?php echo $geran; ?></span>
@@ -219,8 +201,32 @@ $final_poster = $video_poster ?: 'https://tanahlotsabah.com/wp-content/uploads/2
             <?php 
                 endwhile;
                 wp_reset_postdata();
+            else :
+                echo '<p style="text-align:center; grid-column: 1/-1;">Tiada hartanah dijumpai.</p>';
             endif;
             ?>
+        </div>
+    </div>
+</section>
+
+<!-- CTA SECTION -->
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-content">
+            <h2>Berjumpa dengan Pasukan Kami</h2>
+            <p>Hubungi kami untuk konsultasi percuma dan panduan lengkap tentang hartanah tanah di Sabah.</p>
+            <?php 
+            $wa = get_option('tls_wa_number', '60123456789');
+            $phone = get_option('tls_contact_phone', '+60123456789');
+            ?>
+            <div class="cta-buttons">
+                <a href="https://wa.me/<?php echo esc_attr($wa); ?>" class="btn-large btn-whatsapp" target="_blank">
+                    <i class="fab fa-whatsapp"></i> WhatsApp Sekarang
+                </a>
+                <a href="tel:<?php echo esc_attr($phone); ?>" class="btn-large btn-outline-white">
+                    <i class="fas fa-phone"></i> Hubungi Kami
+                </a>
+            </div>
         </div>
     </div>
 </section>
@@ -274,28 +280,5 @@ $final_poster = $video_poster ?: 'https://tanahlotsabah.com/wp-content/uploads/2
     updateResultsCount(cards.length);
 })();
 </script>
-<?php endif; ?>
-
-<!-- CALL TO ACTION -->
-<section class="cta-section">
-    <div class="container">
-        <div class="cta-content">
-            <h2>Berjumpa dengan Pasukan Kami</h2>
-            <p>Hubungi kami untuk konsultasi percuma dan panduan lengkap tentang hartanah tanah di Sabah.</p>
-            <?php 
-            $wa = get_option('tls_wa_number', '60123456789');
-            $phone = get_option('tls_contact_phone', '+60123456789');
-            ?>
-            <div class="cta-buttons">
-                <a href="https://wa.me/<?php echo esc_attr($wa); ?>" class="btn-large btn-whatsapp" target="_blank">
-                    <i class="fab fa-whatsapp"></i> WhatsApp Sekarang
-                </a>
-                <a href="tel:+<?php echo esc_attr($phone); ?>" class="btn-large btn-outline-white">
-                    <i class="fas fa-phone"></i> Hubungi Kami
-                </a>
-            </div>
-        </div>
-    </div>
-</section>
 
 <?php get_footer(); ?>
