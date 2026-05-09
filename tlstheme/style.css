@@ -5346,10 +5346,10 @@ nav.primary.active .menu-container {
 }
 
 /* ============================================
-   INTEGRATED MAP PORTAL (GLOBAL / DESKTOP)
+   INTEGRATED MAP PORTAL (GLOBAL / RESPONSIVE)
    ============================================ */
 .tls-map-portal-section {
-    height: 800px;
+    height: 700px;
     background: #fff;
     position: relative;
     border-top: 1px solid #e2e8f0;
@@ -5607,6 +5607,7 @@ nav.primary.active .menu-container {
 }
 
 @media (max-width: 1024px) {
+    .tls-map-portal-section { height: 600px; }
     .map-portal-sidebar { width: 320px; }
 }
 

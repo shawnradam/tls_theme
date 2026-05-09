@@ -124,7 +124,7 @@ $final_poster = $video_poster ?: 'https://tanahlotsabah.com/wp-content/uploads/2
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <h3>Hartanah di Kawasan Ini</h3>
                     <button onclick="toggleMobilePortalView()" class="back-to-map-btn" style="background:#f1f5f9; border:1px solid #e2e8f0; border-radius:6px; padding:6px 12px; cursor:pointer; font-size:12px; color:#0f172a; display:flex; align-items:center; gap:4px;">
-                        <i class="fas fa-map"></i> Klik sini balik pigi Map
+                        <i class="fas fa-map"></i> Tengok Peta
                     </button>
                 </div>
                 <div class="results-count"><span id="map-results-count">0</span> hartanah dijumpai</div>
