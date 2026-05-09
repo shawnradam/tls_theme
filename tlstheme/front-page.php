@@ -83,16 +83,19 @@ if ($main_video) {
     $video_poster = get_the_post_thumbnail_url($main_video->ID, 'full') ?: '';
 }
 
-$fallback_video = 'https://tanahlotsabah.com/wp-content/uploads/2024/07/tanahlotsabah.mp4';
-$final_video = $video_url ?: $fallback_video;
-$final_poster = $video_poster ?: 'https://tanahlotsabah.com/wp-content/uploads/2024/07/hero-poster.jpg';
+$fallback_video = get_template_directory_uri() . '/assets/videos/hero.mp4';
+$fallback_poster = get_template_directory_uri() . '/assets/images/hero-poster.jpg';
+$final_video = !empty($video_url) ? $video_url : '';
+$final_poster = !empty($video_poster) ? $video_poster : '';
 ?>
 
 <section class="hero">
     <div class="hero-overlay"></div>
+    <?php if (!empty($final_video)): ?>
     <video class="hero-video" autoplay muted loop playsinline poster="<?php echo esc_url($final_poster); ?>">
         <source src="<?php echo esc_url($final_video); ?>" type="video/mp4">
     </video>
+    <?php endif; ?>
     
     <div class="hero-content">
         <h1 class="hero-title">Cari Lot Tanah Impian Anda<br>di <span class="highlight">Tanah Lot Sabah</span></h1>
