@@ -85,8 +85,8 @@ if ($main_video) {
 
 $fallback_video = get_template_directory_uri() . '/assets/videos/hero.mp4';
 $fallback_poster = get_template_directory_uri() . '/assets/images/hero-poster.jpg';
-$final_video = !empty($video_url) ? $video_url : '';
-$final_poster = !empty($video_poster) ? $video_poster : '';
+$final_video = !empty($video_url) ? $video_url : $fallback_video;
+$final_poster = !empty($video_poster) ? $video_poster : $fallback_poster;
 ?>
 
 <section class="hero">
