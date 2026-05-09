@@ -28,7 +28,7 @@ add_action('init', function() {
 // THEME CONSTANTS
 // ============================================
 
-define('TLS_VERSION', '2.1.2');
+define('TLS_VERSION', '4.0');
 define('TLS_LDC_PREFIX', 'tls_ldc_');
 define('TLS_THEME_DIR', get_template_directory());
 define('TLS_THEME_URI', get_template_directory_uri());
