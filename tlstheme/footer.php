@@ -232,6 +232,20 @@
                 Ejen berlesen dan profesional<br>
                 Urusan sah dan selamat</p>
             </div>
+            <?php 
+            $app_settings = function_exists('tls_get_app_settings') ? tls_get_app_settings() : ['enabled' => 0, 'playstore_url' => ''];
+            if ($app_settings['enabled'] && !empty($app_settings['playstore_url'])): 
+            ?>
+            <div class="footer-col footer-app-download">
+                <h4 class="footer-heading">Muat Turun App</h4>
+                <a href="<?php echo esc_url($app_settings['playstore_url']); ?>" target="_blank" class="playstore-btn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 01-.61-.92V2.734a1 1 0 01.609-.92zm10.89 10.893L2.168 3.402l1.114 1.125 11.128 11.13 1.089-1.085-11.89-11.86zm3.496-3.464l1.27 1.296 1.122-1.103-1.27-1.296-1.122 1.103zM5.793 19.574l1.125-1.125 9.287-9.288 1.125 1.125-9.287 9.288-1.125-1.125zm11.855-2.215l1.122-1.125 2.303-2.303-1.125-1.125-2.303 2.303-1.117 1.12 1.12 1.125z"/>
+                    </svg>
+                    <span>Get it on<br><strong>Google Play</strong></span>
+                </a>
+            </div>
+            <?php endif; ?>
         </div>
         <div class="footer-bottom">
             <p>&copy; <?php echo date('Y'); ?> <?php echo esc_html(get_theme_mod('company_name', 'tanahlotsabah')); ?>. Hak Cipta Terpelihara.</p>

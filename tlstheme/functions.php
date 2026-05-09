@@ -11,6 +11,9 @@
 
 if (!defined('ABSPATH')) exit;
 
+// Include app settings module
+require_once get_template_directory() . '/inc/app-settings/class-app-settings.php';
+
 // Disable WordPress Emojis completely
 add_action('init', function() {
     remove_action('wp_head', 'print_emoji_styles');
@@ -2997,6 +3000,7 @@ add_action('admin_menu', function() {
     add_submenu_page('tls-dashboard', 'Pricing Management', 'Pricing Management', 'manage_options', 'tls-pricing-management', 'tls_pricing_management_page');
     add_submenu_page('tls-dashboard', 'Construction Templates', 'Construction Templates', 'manage_options', 'tls-construction-templates', 'tls_construction_templates_page');
     add_submenu_page('tls-dashboard', 'Purchase Calculator Settings', 'Purchase Calculator', 'manage_options', 'tls-purchase-calculator', 'tls_purchase_calculator_settings_page');
+    add_submenu_page('tls-dashboard', 'App Download', 'App Download', 'manage_options', 'tls-app-download', 'tls_app_download_page');
 });
 
 // ============================================
