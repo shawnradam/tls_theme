@@ -143,6 +143,25 @@ $final_poster = !empty($video_poster) ? $video_poster : $fallback_poster;
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     <input type="text" id="map-sidebar-search" placeholder="Cari nama, geran, daerah...">
                 </div>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>Geran:</label>
+                        <div class="filter-buttons" id="geran-filter">
+                            <button class="filter-btn active" data-value="">All</button>
+                            <button class="filter-btn" data-value="NT">NT</button>
+                            <button class="filter-btn" data-value="CL">CL</button>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <label>Status:</label>
+                        <div class="filter-buttons" id="dev-status-filter">
+                            <button class="filter-btn active" data-value="">All</button>
+                            <button class="filter-btn" data-value="planned">Planned</button>
+                            <button class="filter-btn" data-value="in_progress">In Progress</button>
+                            <button class="filter-btn" data-value="completed">Completed</button>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="sidebar-listings" id="map-sidebar-listings">
                 <div class="sidebar-loading">
@@ -312,4 +331,310 @@ $final_poster = !empty($video_poster) ? $video_poster : $fallback_poster;
     </div>
 </section>
 
+<!-- NEWS SECTION -->
+<section class="news-section" id="news-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Panduan & <span class="highlight">Berita</span></h2>
+            <p>Maklumat terkini tentang hartanah, pelaburan dan pembangunan tanah di Sabah.</p>
+        </div>
+        
+        <div class="news-grid">
+            <?php 
+            $news_query = new WP_Query([
+                'post_type' => 'post',
+                'posts_per_page' => 3,
+                'post_status' => 'publish',
+                'orderby' => 'date',
+                'order' => 'DESC'
+            ]);
+            
+            if ($news_query->have_posts()) : 
+                while ($news_query->have_posts()) : $news_query->the_post();
+                    $year = get_the_date('Y');
+                    $categories = get_the_category();
+                    $cat_name = $categories ? $categories[0]->name : 'Panduan';
+            ?>
+                <article class="news-card">
+                    <a href="<?php the_permalink(); ?>" class="news-image-link">
+                        <div class="news-image">
+                            <?php if (has_post_thumbnail()): ?>
+                                <img src="<?php the_post_thumbnail_url('medium_large'); ?>" alt="<?php the_title_attribute(); ?>">
+                            <?php else: ?>
+                                <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=500&h=300&fit=crop" alt="Sabah Land News">
+                            <?php endif; ?>
+                            <span class="news-year"><?php echo esc_html($year); ?></span>
+                        </div>
+                    </a>
+                    <div class="news-content">
+                        <div class="news-meta">
+                            <span class="news-category"><?php echo esc_html($cat_name); ?></span>
+                            <span class="news-date"><?php echo get_the_date('d M Y'); ?></span>
+                        </div>
+                        <h3 class="news-title">
+                            <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
+                        </h3>
+                        <p class="news-excerpt"><?php echo wp_trim_words(get_the_excerpt(), 20, '...'); ?></p>
+                        <a href="<?php the_permalink(); ?>" class="news-read-more">
+                            Baca Lagi <i class="material-icons" style="font-size:16px;">arrow_forward</i>
+                        </a>
+                    </div>
+                </article>
+            <?php 
+                endwhile;
+                wp_reset_postdata();
+            else : ?>
+                <div class="no-news">
+                    <p>Belum ada berita. Berita pertama akan tersedia tidak lama lagi.</p>
+                </div>
+            <?php endif; ?>
+        </div>
+        
+        <div class="news-cta">
+            <a href="<?php echo home_url('/news/'); ?>" class="btn-outline">
+                <i class="material-icons" style="font-size:18px;">library_books</i>
+                Lihat Semua Berita & Panduan
+            </a>
+        </div>
+    </div>
+</section>
+
 <?php get_footer(); ?>
+
+<style>
+.news-section {
+    padding: 60px 0;
+    background: var(--bg);
+    width: 100%;
+    max-width: 100%;
+}
+
+.news-section .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+.news-section .section-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.news-section .section-header h2 {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    color: var(--text);
+}
+
+.news-section .section-header p {
+    color: var(--muted);
+    font-size: 1.05rem;
+}
+
+.news-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 32px;
+    width: 100%;
+}
+
+.news-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.news-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+}
+
+.news-image-link {
+    display: block;
+    flex-shrink: 0;
+}
+
+.news-image {
+    position: relative;
+    aspect-ratio: 16/9;
+    overflow: hidden;
+}
+
+.news-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.news-card:hover .news-image img {
+    transform: scale(1.05);
+}
+
+.news-year {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: var(--primary);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.news-content {
+    padding: 20px;
+}
+
+.news-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    font-size: 12px;
+}
+
+.news-category {
+    background: var(--bg-light);
+    color: var(--primary);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.news-date {
+    color: var(--muted);
+}
+
+.news-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+.news-title a {
+    color: var(--text);
+    text-decoration: none;
+}
+
+.news-title a:hover {
+    color: var(--accent);
+}
+
+.news-excerpt {
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 14px;
+}
+
+.news-read-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+}
+
+.news-read-more:hover {
+    gap: 10px;
+}
+
+.news-cta {
+    text-align: center;
+}
+
+.btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border: 2px solid var(--primary);
+    color: var(--primary);
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.btn-outline:hover {
+    background: var(--primary);
+    color: #fff;
+}
+
+.no-news {
+    text-align: center;
+    padding: 40px;
+    color: var(--muted);
+    grid-column: 1 / -1;
+}
+
+/* Tablet - iPad */
+@media (max-width: 1024px) {
+    .news-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .news-section {
+        padding: 40px 0;
+    }
+    
+    .news-section .section-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .news-section .section-header p {
+        font-size: 0.95rem;
+    }
+    
+    .news-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .news-cta {
+        margin-top: 10px;
+    }
+    
+    .btn-outline {
+        padding: 12px 20px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+    .news-section {
+        padding: 30px 0;
+    }
+    
+    .news-card {
+        border-radius: 10px;
+    }
+    
+    .news-content {
+        padding: 14px;
+    }
+    
+    .news-title {
+        font-size: 1rem;
+    }
+    
+    .news-excerpt {
+        font-size: 0.85rem;
+    }
+}
+</style>

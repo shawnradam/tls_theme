@@ -65,6 +65,10 @@ require_once TLS_THEME_DIR . '/inc/ajax/auth-handlers.php';
 require_once TLS_THEME_DIR . '/inc/license-system.php';
 require_once TLS_THEME_DIR . '/inc/fab-system.php';
 require_once TLS_THEME_DIR . '/inc/agent-tools/agent-tools.php';
+require_once TLS_THEME_DIR . '/inc/news-seed-data.php';
+require_once TLS_THEME_DIR . '/inc/tanah-sample-data.php';
+require_once TLS_THEME_DIR . '/inc/seed-data-tool.php';
+require_once TLS_THEME_DIR . '/inc/contact-form.php';
 // Map system moved to tls-map plugin (see wp-content/plugins/tls-map/)
 // require_once TLS_THEME_DIR . '/inc/map-system-unified.php';
 // require_once TLS_THEME_DIR . '/inc/admin-map-pages.php';
@@ -75,10 +79,11 @@ global $tls_fab_system;
 $tls_fab_system = new TLS_FAB_System();
 
 // Auto-create Calculator page if it doesn't exist
-add_action('init', 'tls_ensure_calculator_page', 11);
-function tls_ensure_calculator_page() {
-    $existing = get_page_by_path('calculator');
-    if (!$existing) {
+add_action('init', 'tls_ensure_pages', 11);
+function tls_ensure_pages() {
+    // Calculator page
+    $calculator = get_page_by_path('calculator');
+    if (!$calculator) {
         wp_insert_post([
             'post_title'    => 'Kalkulator Kos Pembangunan',
             'post_name'     => 'calculator',
@@ -87,7 +92,21 @@ function tls_ensure_calculator_page() {
             'post_type'     => 'page',
             'page_template' => 'page-calculator.php'
         ]);
-        flush_rewrite_rules();
+    }
+    
+    // News page - create only if doesn't exist
+    $news = get_page_by_path('news');
+    if (!$news) {
+        $news_id = wp_insert_post([
+            'post_title'    => 'Panduan & Berita',
+            'post_name'     => 'news',
+            'post_content'  => '',
+            'post_status'   => 'publish',
+            'post_type'     => 'page'
+        ]);
+        if ($news_id && !is_wp_error($news_id)) {
+            update_post_meta($news_id, '_wp_page_template', 'page-news.php');
+        }
     }
 }
 

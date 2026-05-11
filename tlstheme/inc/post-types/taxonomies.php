@@ -35,4 +35,17 @@ function tls_register_taxonomies() {
         'hierarchical' => true,
         'show_admin_column' => true,
     ]);
+
+    // Development Status Taxonomy
+    register_taxonomy('development_status', 'tanah', [
+        'labels' => [
+            'name' => 'Development Status',
+            'add_new_item' => 'Add Status',
+            'edit_item' => 'Edit Status',
+            'all_items' => 'All Statuses',
+        ],
+        'hierarchical' => true,
+        'show_admin_column' => true,
+        'show_in_rest' => true,
+    ]);
 }

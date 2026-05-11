@@ -22,6 +22,10 @@ function tls_enqueue_frontend_scripts() {
     wp_enqueue_style('google-material-icons', 'https://fonts.googleapis.com/icon?family=Material+Icons', [], null);
     wp_enqueue_style('tls-calculator', get_template_directory_uri() . '/assets/css/calculator.css', [], TLS_VERSION);
 
+    // Chart.js for news/blog statistics
+    wp_enqueue_script('chartjs', 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js', [], '4.4.0', true);
+    wp_enqueue_script('tls-news-charts', get_template_directory_uri() . '/assets/js/news-charts.js', ['chartjs'], TLS_VERSION, true);
+
     // Calculator Scripts
     wp_enqueue_script('tls-calculator', get_template_directory_uri() . '/assets/js/calculator.js', ['jquery'], TLS_VERSION, true);
     wp_localize_script('tls-calculator', 'ldcAjax', [

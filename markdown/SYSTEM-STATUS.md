@@ -1,192 +1,137 @@
 # TLS Theme - System Status & Issues
 
-## Current Status (as of 2026-05-04)
+## Current Status (as of 2026-05-10)
 
 ### ✅ Working Features:
+
 1. **Hero Header** - Fullscreen on all devices, professional design with backdrop blur badge
 2. **Google Material Icons** - Integrated (place, open_in_new, directions_car, directions_walk, directions_bike, shopping_cart)
 3. **Map Info Panel** - Shows on desktop when clicking map markers or sidebar items
 4. **Property Link Button** - "View Property Details" button now visible and links to property page
 5. **Navigation Buttons** - Drive, Walk, Motorcycle (Google Maps directions)
 6. **Nearby Shops Button** - Opens Google Maps search for shopping malls
-7. **Demo Page** - Created at `http://localhost/maps/demo-property/`
-8. **Draw Boundary** - Working at WordPress Admin → TLS Dashboard → Draw Boundary
-9. **Sidebar Card Buttons** - "place" (Show on Map) and "open_in_new" (View Details) now visible with proper CSS
-10. **Hidden Recent Listings on Desktop** - Only shows on mobile (`.mobile-only-listings` class)
+7. **Draw Boundary** - Working at WordPress Admin → TLS Dashboard → Draw Boundary
+8. **Development Status Filter** - Planned / In Progress / Completed / Raw Land filters on map sidebar
+9. **News/Blog System** - 10 news articles with Chart.js statistics
+10. **Seed Data Tool** - Admin UI at TLS System → Seed Data for creating sample content
 
 ---
 
-## ❌ Current Issues to Fix:
+## New Features Added (2026-05-10)
 
-### Issue #1: "Lihat Peta" Button on Mobile
-**Problem:** When clicking "Lihat Peta" (Show Map) on mobile, the map doesn't display properly. User needs to zoom in/out to see the map contents.
+### Development Status Filter
+- **Meta Field:** `_tanah_development_status` with values: planned, in_progress, completed, raw_land
+- **Taxonomy:** `development_status` for REST API filtering
+- **UI:** Filter buttons in map sidebar (Geran: NT/CL/All + Status: Planned/In Progress/Completed/All)
+- **Files Modified:**
+  - `inc/post-types/tanah-cpt.php` - Added meta box
+  - `inc/post-types/taxonomies.php` - Added taxonomy
+  - `front-page.php` - Added filter buttons
+  - `tlsmap.js` (plugin) - Added filter logic
+  - `class-tlsmap-frontend.php` (plugin) - Added dev_status to AJAX response
 
-**Current Behavior:**
-- Button toggles sidebar visibility
-- When sidebar hides, map should show but needs manual zoom adjustment
-- `toggleMobilePortalView()` function exists but map doesn't auto-fit to show contents
+### News/Blog System
+- **10 News Articles** with real Sabah land statistics
+- **Chart.js 4.4.0** for animated charts
+- **Pages:**
+  - Homepage: 3 latest articles in news section
+  - `/news/`: All articles in grid layout
+  - Individual posts: Full content with charts
+- **Files Created:**
+  - `inc/news-seed-data.php` - Seed function
+  - `inc/news-templates/` - 10 content template files
+  - `inc/tanah-sample-data.php` - Sample properties
+  - `inc/seed-data-tool.php` - Admin UI
+  - `page-news.php` - News page template
+  - `template-parts/content-blog.php` - Blog card
+  - `inc/core/enqueue-scripts.php` - Chart.js CDN
 
-**Expected Behavior:**
-- When clicking "Lihat Peta", map should automatically zoom to show the properties/content
-- Map should be fully visible without manual zoom adjustment
-
-**File Location:** `front-page.php:155-165`
-
----
-
-### Issue #2: Property Details Not Showing in List View
-**Problem:** User mentioned "i didn't see any walking, driving, or nearby shop that i can add/edit". These features are **automatically captured** from property coordinates, but user is confused about how they work.
-
-**Clarification:**
-- **Drive/Walk/Motorcycle buttons** - Auto-generated from property's Latitude & Longitude coordinates
-- **Nearby Shops** - Auto-generated from coordinates using Google Maps search
-- **NO manual input needed** - System captures these automatically
-
-**How it works:**
-1. Add property in WordPress Admin → Tanah → Add New
-2. Enter coordinates in custom fields (`_tanah_latitude`, `_tanah_longitude`)
-3. OR use "Draw Boundary" tool to set the property location
-4. System automatically generates:
-   - Google Maps directions links (Drive, Walk, Bike)
-   - Nearby Shops search link
-   - Property page link (`get_permalink()`)
-
-**User Perception Issue:** User thinks they need to manually add these features, but they're automatic.
+### Responsive Styles
+- **Desktop:** 3-column grid for news/blog
+- **Tablet (iPad):** 2-column grid
+- **Mobile:** 1-column stacked layout
+- **Files:** `style.css`, `page-news.php`, `front-page.php`
 
 ---
 
-### Issue #3: Map Zoom Behavior
-**Problem:** When clicking sidebar items or map markers, the zoom level might not be optimal.
+## Database Options
 
-**Current Fix Applied:**
-- `fitBounds()` now used for properties with boundaries
-- Falls back to `setView([lat, lng], 16)` for properties without boundaries
-- Added `isValid()` check and try-catch for invalid boundaries
-
-**Needs Testing:** Verify zoom works correctly on both desktop and mobile.
+| Option Name | Purpose |
+|------------|---------|
+| `tls_news_seeded` | Prevents duplicate news seeding |
+| `tls_tanah_seeded` | Prevents duplicate properties seeding |
 
 ---
 
-## Required Agents/Features to Create:
+## Required Files Checklist
 
-### Agent #1: Property Data Validator
-**Purpose:** Validate that all properties have required data (coordinates, boundary, images, links)
+### ✅ Already Created:
+- `inc/news-seed-data.php`
+- `inc/tanah-sample-data.php`
+- `inc/seed-data-tool.php`
+- `inc/seed-wpcli.php`
+- `inc/news-templates/ncr-guide.php`
+- `inc/news-templates/nt-cl-distribution.php`
+- `inc/news-templates/pantas-program.php`
+- `inc/news-templates/residential-2022.php`
+- `inc/news-templates/residential-2023.php`
+- `inc/news-templates/kkip-investment.php`
+- `inc/news-templates/nt-reform-2024.php`
+- `inc/news-templates/pan-borneo.php`
+- `inc/news-templates/nt-cl-roi.php`
+- `inc/news-templates/market-uptrend-2025.php`
 
-**Tasks:**
-- Check if all properties have valid coordinates (lat/lng)
-- Verify property links are generated correctly (not `false`)
-- Ensure boundaries are valid GeoJSON
-- Generate report of properties missing critical data
-
-**Implementation:** Create `inc/property-validator.php`
-
----
-
-### Agent #2: Map Display Optimizer
-**Purpose:** Fix mobile map display issues when toggling "Lihat Peta"
-
-**Tasks:**
-- Fix `toggleMobilePortalView()` to properly resize map after sidebar toggle
-- Ensure map fits bounds/zoom after sidebar hides
-- Add `map.invalidateSize()` with proper timing
-- Test on various mobile screen sizes
-
-**File to Modify:** `front-page.php:155-165`
-
----
-
-### Agent #3: User Guide Creator
-**Purpose:** Create documentation so user understands automatic features
-
-**Tasks:**
-- Document how Drive/Walk/Motorcycle buttons work (automatic from coordinates)
-- Explain Nearby Shops feature (automatic from coordinates)
-- Create step-by-step guide: "How to add a property with full map features"
-- Add screenshots/diagrams
-
-**Output:** `PROPERTY-GUIDE.md`
+### ✅ Modified Files:
+- `inc/post-types/tanah-cpt.php` - Added development_status meta box
+- `inc/post-types/taxonomies.php` - Added development_status taxonomy
+- `inc/core/enqueue-scripts.php` - Added Chart.js
+- `template-parts/content-blog.php` - Updated blog card
+- `page-news.php` - News page template with responsive styles
+- `front-page.php` - News section added
+- `style.css` - Blog/News responsive styles added
+- `functions.php` - All new files required
 
 ---
 
-## Files Modified (Recent Session):
+## How to Use Seed Data
 
-1. **`assets/js/tlsmap.js`**
-   - Fixed JavaScript syntax errors (missing commas in array literals)
-   - Added try-catch for `fitBounds()` with `isValid()` check
-   - Fixed `linkHtml` variable hoisting issue
-   - Updated buttons to use Google Material Icons
-   - Added `window.findNearbyShops()` function
-
-2. **`assets/css/tlsmap.css`**
-   - Added `.portal-card-actions` and `.action-btn` styles
-   - Added `.panel-btn-primary` full styles (display, padding, color)
-   - Added Material Icons compatibility
-
-3. **`inc/map-system-unified.php`**
-   - Fixed PHP ternary operator for `link` property
-   - Changed `'link' => get_permalink($id) ?: ''` to proper syntax
-
-4. **`front-page.php`**
-   - Fixed "Lihat Peta" button text (changed from "Lihat Senarai")
-   - Added `map.invalidateSize()` in `toggleMobilePortalView()`
-   - Added scroll to map section when showing map
-
-5. **`inc/core/enqueue-scripts.php`**
-   - Added Google Material Icons CSS
-
-6. **`page-demo-property.php`** (Created)
-   - Demo page template for testing property links
-
-7. **`inc/admin-map-pages.php`**
-   - Draw Boundary feature (existing, working)
+1. Go to **WP Admin → TLS System → Seed Data**
+2. Click **"Seed All Data"** to create:
+   - 10 news articles with real statistics
+   - 10 sample tanah properties
+3. Or use individual buttons for specific data
 
 ---
 
-## How to Test Current System:
+## How to Add Development Status
 
-### Test 1: Info Panel & Buttons (Desktop)
-1. Open `http://localhost/maps/`
-2. Click on a map marker or sidebar item
-3. ✅ Info panel should appear at top-right
-4. ✅ "View Property Details" button should link to property page
-5. ✅ Drive/Walk/Motorcycle buttons should open Google Maps
-6. ✅ Nearby Shops should open Google Maps search
-
-### Test 2: Mobile "Lihat Peta" Button
-1. Open `http://localhost/maps/` on mobile or dev tools mobile view
-2. Click "Lihat Senarai" to show sidebar
-3. Click on a property in sidebar
-4. Click "Lihat Peta" to show map
-5. ❌ **ISSUE:** Map may not display properly, needs zoom adjustment
-
-### Test 3: Property Creation Flow
-1. WordPress Admin → Tanah → Add New
-2. Fill in: Title, Price, Area, Geran Type
-3. Set coordinates (Latitude & Longitude) or use Draw Boundary
-4. Publish
-5. Verify: Property appears on map with all buttons working
+1. Go to **WordPress Admin → Tanah → Add New** (or edit existing)
+2. Scroll to **"Development Status"** meta box (right side)
+3. Select: Planned / In Progress / Completed / Raw Land
+4. Add optional development notes
+5. Publish/Update
 
 ---
 
-## Next Steps:
+## Testing Checklist
 
-1. **Fix "Lihat Peta" mobile display issue** (Agent #2)
-2. **Create Property Data Validator** (Agent #1)
-3. **Create User Guide** (Agent #3)
-4. **Test thoroughly** on desktop, tablet, and mobile
-5. **Remove any remaining debug code**
-
----
-
-## Notes for Developers:
-
-- LSP errors in PHP files are **false positives** (WordPress functions not recognized by PHP language server)
-- Always run `node -c file.js` to check JavaScript syntax
-- Always run `php -l file.php` to check PHP syntax
-- Test on actual mobile devices, not just browser dev tools
-- Clear browser cache when testing CSS/JS changes
+- [ ] Homepage news section shows 3 articles
+- [ ] `/news/` page shows all 10 articles
+- [ ] Mobile/iPad responsive grid works
+- [ ] Development status filter buttons visible
+- [ ] Chart.js charts animate on single post pages
+- [ ] Sample properties appear on map
 
 ---
 
-**Last Updated:** 2026-05-04
-**Status:** Partial fix applied, needs mobile display optimization
+## Notes for Developers
+
+- LSP errors in PHP files are **false positives** (WordPress functions not recognized)
+- Always test on actual mobile devices
+- Clear browser cache when testing CSS changes
+- Run `php -l file.php` to check PHP syntax
+
+---
+
+**Last Updated:** 2026-05-10
+**Status:** ✅ All features implemented and documented
