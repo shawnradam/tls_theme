@@ -31,7 +31,7 @@ add_action('init', function() {
 // THEME CONSTANTS
 // ============================================
 
-define('TLS_VERSION', '4.0');
+define('TLS_VERSION', '4.0.1');
 define('TLS_LDC_PREFIX', 'tls_ldc_');
 define('TLS_THEME_DIR', get_template_directory());
 define('TLS_THEME_URI', get_template_directory_uri());
@@ -60,6 +60,7 @@ require_once TLS_THEME_DIR . '/inc/property-management-page.php';
 
 // AJAX Handlers (replaces lines 22-28, 42-61)
 require_once TLS_THEME_DIR . '/inc/ajax/auth-handlers.php';
+require_once TLS_THEME_DIR . '/inc/ajax/news-handlers.php';
 
 // Existing Modular Systems
 require_once TLS_THEME_DIR . '/inc/license-system.php';

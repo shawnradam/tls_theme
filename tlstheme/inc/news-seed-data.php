@@ -10,14 +10,24 @@ if (!defined('ABSPATH')) exit;
 
 add_action('after_setup_theme', 'tls_seed_news_posts');
 function tls_seed_news_posts() {
+    // Check if re-seeding is requested
+    if (isset($_GET['reseed_news']) && current_user_can('manage_options')) {
+        // Delete existing news posts
+        $existing_news = get_posts([
+            'post_type' => 'post',
+            'posts_per_page' => -1,
+            'post_status' => 'any'
+        ]);
+        foreach ($existing_news as $post) {
+            wp_delete_post($post->ID, true);
+        }
+        delete_option('tls_news_seeded');
+    }
+
     // Check if already seeded
     $seeded = get_option('tls_news_seeded', false);
     
-    // For development: delete option to re-seed
-    // Uncomment the line below to force re-seeding:
-    // delete_option('tls_news_seeded');
-    
-    if ($seeded && !isset($_GET['reseed_news'])) return;
+    if ($seeded) return;
 
     $posts_data = [
         [
