@@ -56,23 +56,54 @@ if (!$main_video) {
     $main_video = !empty($main_video) ? $main_video[0] : null;
 }
 
-$video_url = '';
-$video_poster = '';
+$media_url = '';
+$media_poster = '';
+$media_type = '';
+$media_disabled = false;
+$youtube_embed = '';
+$youtube_id = '';
 if ($main_video) {
-    $video_url = get_post_meta($main_video->ID, '_hero_video_url', true) ?: '';
-    $video_poster = get_the_post_thumbnail_url($main_video->ID, 'full') ?: '';
+    $media_url = get_post_meta($main_video->ID, 'hero_video_url', true) ?: '';
+    $media_type = get_post_meta($main_video->ID, 'hero_video_type', true) ?: '';
+    $media_disabled = get_post_meta($main_video->ID, 'hero_video_disabled', true) ?: 0;
+    $media_poster = get_the_post_thumbnail_url($main_video->ID, 'full') ?: '';
+    if ($media_type === 'youtube') {
+        $youtube_embed = tls_get_youtube_embed_url($media_url);
+        $youtube_id = tls_get_youtube_video_id($media_url);
+    }
 }
 
-$fallback_video = 'https://tanahlotsabah.com/wp-content/uploads/2024/07/tanahlotsabah.mp4';
-$final_video = $video_url ?: $fallback_video;
-$final_poster = $video_poster ?: 'https://tanahlotsabah.com/wp-content/uploads/2024/07/hero-poster.jpg';
+$fallback_video = get_template_directory_uri() . '/assets/videos/hero.mp4';
+$fallback_poster = get_template_directory_uri() . '/assets/images/placeholder.jpeg';
+$final_poster = !empty($media_poster) ? $media_poster : $fallback_poster;
 ?>
 
 <section class="hero">
     <div class="hero-overlay"></div>
+    <?php if ($media_disabled): ?>
+    <div class="hero-media">
+        <img src="<?php echo esc_url($final_poster); ?>" class="hero-bg-image" alt="" aria-hidden="true">
+    </div>
+    <?php elseif ($media_type === 'youtube' && !empty($media_url)): ?>
+    <div class="hero-media">
+        <iframe src="<?php echo esc_url($youtube_embed); ?>?autoplay=1&mute=1&loop=1&playlist=<?php echo esc_attr($youtube_id); ?>&controls=0&showinfo=0&modestbranding=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        <?php if (!empty($final_poster)): ?>
+        <img src="<?php echo esc_url($final_poster); ?>" class="hero-poster-image" alt="" aria-hidden="true">
+        <?php endif; ?>
+    </div>
+    <?php elseif ($media_type === 'image'): ?>
+    <div class="hero-media">
+        <img src="<?php echo esc_url(!empty($media_url) ? $media_url : $final_poster); ?>" class="hero-bg-image" alt="" aria-hidden="true">
+    </div>
+    <?php elseif (!empty($media_url)): ?>
     <video class="hero-video" autoplay muted loop playsinline poster="<?php echo esc_url($final_poster); ?>">
-        <source src="<?php echo esc_url($final_video); ?>" type="video/mp4">
+        <source src="<?php echo esc_url($media_url); ?>" type="video/mp4">
     </video>
+    <?php else: ?>
+    <video class="hero-video" autoplay muted loop playsinline poster="<?php echo esc_url($final_poster); ?>">
+        <source src="<?php echo esc_url($fallback_video); ?>" type="video/mp4">
+    </video>
+    <?php endif; ?>
     
     <div class="hero-content">
         <span class="hero-badge">Tanah Lot Sabah</span>

@@ -6,134 +6,8 @@ add_filter('body_class', function($classes) {
     $classes[] = 'disable-fullscreen-footer';
     return $classes;
 });
-
-// Include WordPress plugin functions for is_plugin_active()
-include_once(ABSPATH . 'wp-admin/includes/plugin.php');
-
-// Add global map functions to footer
-add_action('wp_footer', 'tls_frontpage_global_scripts');
-
-function tls_frontpage_global_scripts() {
-    ?>
-    <script>
-    // Global functions - ALWAYS available on front page
-    window.scrollToMap = function(event) {
-        if (event) {
-            event.preventDefault();
-        }
-        var mapSection = document.getElementById('map-portal');
-        if (mapSection) {
-            mapSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    };
-
-    window.toggleMobilePortalView = function() {
-        var sidebar = document.querySelector('.map-portal-sidebar');
-        var btn = document.getElementById('portal-view-btn');
-        if (!sidebar || !btn) return;
-        
-        var isShowing = sidebar.classList.contains('show');
-        
-        if (isShowing) {
-            sidebar.classList.remove('show');
-            btn.innerHTML = '<i class="fas fa-list"></i> Senarai';
-            btn.classList.remove('map-hidden');
-            var mapSection = document.getElementById('map-portal');
-            if (mapSection) {
-                mapSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-            setTimeout(function() {
-                if (window.tlsMap) {
-                    window.tlsMap.invalidateSize();
-                }
-            }, 400);
-        } else {
-            sidebar.classList.add('show');
-            btn.innerHTML = '<i class="fas fa-chevron-left"></i> Peta';
-            btn.classList.add('map-hidden');
-            var sidebarEl = document.querySelector('.map-portal-sidebar');
-            if (sidebarEl) {
-                sidebarEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }
-    };
-
-    document.addEventListener('DOMContentLoaded', function() {
-        var btn = document.getElementById('portal-view-btn');
-        var sidebar = document.querySelector('.map-portal-sidebar');
-        if (btn && sidebar) {
-            sidebar.classList.remove('show');
-            btn.innerHTML = '<i class="fas fa-list"></i> Senarai';
-            btn.classList.remove('map-hidden');
-        }
-
-        // Show More News Logic (AJAX)
-        var showMoreBtn = document.getElementById('showMoreNews');
-        var newsGrid = document.getElementById('newsGrid');
-        
-        if (showMoreBtn && newsGrid) {
-            showMoreBtn.addEventListener('click', function() {
-                var currentPage = parseInt(newsGrid.getAttribute('data-page'));
-                var nextPage = currentPage + 1;
-                var btnText = showMoreBtn.querySelector('.btn-text');
-                var btnLoading = showMoreBtn.querySelector('.btn-loading');
-                var btnIcon = showMoreBtn.querySelector('.material-icons');
-
-                // Show loading state
-                showMoreBtn.disabled = true;
-                if (btnText) btnText.style.display = 'none';
-                if (btnIcon) btnIcon.style.display = 'none';
-                if (btnLoading) btnLoading.style.display = 'inline';
-
-                // AJAX Request
-                var formData = new FormData();
-                formData.append('action', 'tls_load_more_news');
-                formData.append('page', nextPage);
-
-                fetch('<?php echo admin_url('admin-ajax.php'); ?>', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Append new posts
-                        var tempDiv = document.createElement('div');
-                        tempDiv.innerHTML = data.data.html;
-                        
-                        while (tempDiv.firstChild) {
-                            newsGrid.appendChild(tempDiv.firstChild);
-                        }
-
-                        // Update page number
-                        newsGrid.setAttribute('data-page', nextPage);
-
-                        // Hide button if no more posts
-                        if (!data.data.more) {
-                            showMoreBtn.style.display = 'none';
-                        }
-                    } else {
-                        console.error('Error loading news:', data.data);
-                        showMoreBtn.style.display = 'none';
-                    }
-                })
-                .catch(error => {
-                    console.error('AJAX Error:', error);
-                })
-                .finally(() => {
-                    // Reset loading state
-                    showMoreBtn.disabled = false;
-                    if (btnText) btnText.style.display = 'inline';
-                    if (btnIcon) btnIcon.style.display = 'inline';
-                    if (btnLoading) btnLoading.style.display = 'none';
-                });
-            });
-        }
-    });
-    </script>
-    <?php
-}
 ?>
+
 
 
 <!-- HERO SECTION -->
@@ -146,24 +20,52 @@ if (!$main_video) {
     $main_video = !empty($main_video) ? $main_video[0] : null;
 }
 
-$video_url = '';
-$video_poster = '';
+$media_url = '';
+$media_poster = '';
+$media_type = '';
+$media_disabled = false;
+$youtube_embed = '';
+$youtube_id = '';
 if ($main_video) {
-    $video_url = get_post_meta($main_video->ID, '_hero_video_url', true) ?: '';
-    $video_poster = get_the_post_thumbnail_url($main_video->ID, 'full') ?: '';
+    $media_url = get_post_meta($main_video->ID, 'hero_video_url', true) ?: '';
+    $media_type = get_post_meta($main_video->ID, 'hero_video_type', true) ?: '';
+    $media_disabled = get_post_meta($main_video->ID, 'hero_video_disabled', true) ?: 0;
+    $media_poster = get_the_post_thumbnail_url($main_video->ID, 'full') ?: '';
+    if ($media_type === 'youtube') {
+        $youtube_embed = tls_get_youtube_embed_url($media_url);
+        $youtube_id = tls_get_youtube_video_id($media_url);
+    }
 }
 
 $fallback_video = get_template_directory_uri() . '/assets/videos/hero.mp4';
-$fallback_poster = get_template_directory_uri() . '/assets/images/hero-poster.jpg';
-$final_video = !empty($video_url) ? $video_url : $fallback_video;
-$final_poster = !empty($video_poster) ? $video_poster : $fallback_poster;
+$fallback_poster = get_template_directory_uri() . '/assets/images/placeholder.jpeg';
+$final_poster = !empty($media_poster) ? $media_poster : $fallback_poster;
 ?>
 
 <section class="hero">
     <div class="hero-overlay"></div>
-    <?php if (!empty($final_video)): ?>
+    <?php if ($media_disabled): ?>
+    <div class="hero-media">
+        <img src="<?php echo esc_url($final_poster); ?>" class="hero-bg-image" alt="" aria-hidden="true">
+    </div>
+    <?php elseif ($media_type === 'youtube' && !empty($media_url)): ?>
+    <div class="hero-media">
+        <iframe src="<?php echo esc_url($youtube_embed); ?>?autoplay=1&mute=1&loop=1&playlist=<?php echo esc_attr($youtube_id); ?>&controls=0&showinfo=0&modestbranding=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        <?php if (!empty($final_poster)): ?>
+        <img src="<?php echo esc_url($final_poster); ?>" class="hero-poster-image" alt="" aria-hidden="true">
+        <?php endif; ?>
+    </div>
+    <?php elseif ($media_type === 'image'): ?>
+    <div class="hero-media">
+        <img src="<?php echo esc_url(!empty($media_url) ? $media_url : $final_poster); ?>" class="hero-bg-image" alt="" aria-hidden="true">
+    </div>
+    <?php elseif (!empty($media_url)): ?>
     <video class="hero-video" autoplay muted loop playsinline poster="<?php echo esc_url($final_poster); ?>">
-        <source src="<?php echo esc_url($final_video); ?>" type="video/mp4">
+        <source src="<?php echo esc_url($media_url); ?>" type="video/mp4">
+    </video>
+    <?php else: ?>
+    <video class="hero-video" autoplay muted loop playsinline poster="<?php echo esc_url($final_poster); ?>">
+        <source src="<?php echo esc_url($fallback_video); ?>" type="video/mp4">
     </video>
     <?php endif; ?>
     
@@ -296,7 +198,7 @@ $final_poster = !empty($video_poster) ? $video_poster : $fallback_poster;
                     $ekar = get_post_meta(get_the_ID(), '_tanah_keluasan', true) ?: 0;
                     $geran = get_post_meta(get_the_ID(), '_tanah_jenis_geran', true) ?: 'CL';
                     $status = strtolower(get_post_meta(get_the_ID(), '_tanah_status', true) ?: 'available');
-                    $thumbnail = get_the_post_thumbnail_url(get_the_ID(), 'medium') ?: 'https://tanahlotsabah.com/wp-content/themes/tlstheme/assets/images/placeholder.jpeg';
+                    $thumbnail = get_the_post_thumbnail_url(get_the_ID(), 'medium') ?: get_template_directory_uri() . '/assets/images/placeholder.jpeg';
             ?>
                 <div class="listing-card" data-title="<?php echo esc_attr(strtolower(get_the_title())); ?>" data-status="<?php echo esc_attr($status); ?>" data-geran="<?php echo esc_attr($geran); ?>">
                     <div class="listing-image">
@@ -426,7 +328,7 @@ $final_poster = !empty($video_poster) ? $video_poster : $fallback_poster;
                             <?php if (has_post_thumbnail()): ?>
                                 <img src="<?php the_post_thumbnail_url('medium_large'); ?>" alt="<?php the_title_attribute(); ?>">
                             <?php else: ?>
-                                <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=500&h=300&fit=crop" alt="Sabah Land News">
+                                <img src="<?php echo get_template_directory_uri(); ?>/assets/images/placeholder.jpeg" alt="Sabah Land News">
                             <?php endif; ?>
                             <span class="news-year"><?php echo esc_html($year); ?></span>
                         </div>

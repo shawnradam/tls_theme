@@ -31,7 +31,7 @@ add_action('init', function() {
 // THEME CONSTANTS
 // ============================================
 
-define('TLS_VERSION', '4.0.1');
+define('TLS_VERSION', '4.0.2');
 define('TLS_LDC_PREFIX', 'tls_ldc_');
 define('TLS_THEME_DIR', get_template_directory());
 define('TLS_THEME_URI', get_template_directory_uri());
@@ -61,6 +61,7 @@ require_once TLS_THEME_DIR . '/inc/property-management-page.php';
 // AJAX Handlers (replaces lines 22-28, 42-61)
 require_once TLS_THEME_DIR . '/inc/ajax/auth-handlers.php';
 require_once TLS_THEME_DIR . '/inc/ajax/news-handlers.php';
+require_once TLS_THEME_DIR . '/inc/ajax/app-handlers.php';
 
 // Existing Modular Systems
 require_once TLS_THEME_DIR . '/inc/license-system.php';
@@ -1010,6 +1011,32 @@ function tls_get_hero_videos() {
     return $videos->posts;
 }
 
+function tls_get_youtube_embed_url($url) {
+    if (empty($url)) return '';
+
+    if (strpos($url, 'youtube.com/embed/') !== false) {
+        return $url;
+    }
+
+    $video_id = '';
+    if (preg_match('/[?&]v=([^&]+)/', $url, $m)) {
+        $video_id = $m[1];
+    }
+    if (!$video_id && preg_match('/youtu\.be\/([^?&]+)/', $url, $m)) {
+        $video_id = $m[1];
+    }
+    if (!$video_id) return $url;
+
+    return 'https://www.youtube.com/embed/' . $video_id;
+}
+
+function tls_get_youtube_video_id($url) {
+    if (empty($url)) return '';
+    $parts = explode('/', parse_url($url, PHP_URL_PATH) ?: '');
+    $last = end($parts);
+    return $last ?: '';
+}
+
 // ============================================
 // LEAD TRACKING SYSTEM (Tanah Clicks)
 // ============================================
@@ -1093,65 +1120,74 @@ function tls_leads_admin_page() {
     $today = $wpdb->get_var("SELECT COUNT(*) FROM $table WHERE DATE(created_at) = CURDATE()");
     $total_value = $wpdb->get_var("SELECT SUM(tanah_price) FROM $table");
     ?>
-    <div class="wrap">
-        <h1>Tanah Lead Tracking</h1>
-        
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 30px 0;">
-            <div class="stat-box">
-                <h3><?php echo $total; ?></h3>
-                <p>Total Leads</p>
+    <div class="wrap tls-admin-modern">
+        <div class="tls-admin-header">
+            <h1><span class="dashicons dashicons-chart-bar"></span> Tanah Lead Tracking</h1>
+            <p>Monitor interest and conversion metrics for your property listings.</p>
+        </div>
+
+        <div class="tls-card">
+            <div class="card-header">
+                <span class="dashicons dashicons-performance"></span>
+                <h2>Performance Overview</h2>
             </div>
-            <div class="stat-box">
-                <h3><?php echo $today; ?></h3>
-                <p>Today</p>
-            </div>
-            <div class="stat-box">
-                <h3>RM <?php echo number_format($total_value ?: 0, 2); ?></h3>
-                <p>Total Interest Value</p>
+            <div class="status-grid">
+                <div class="status-item active">
+                    <div class="val"><?php echo number_format($total); ?></div>
+                    <div class="lab">Total Leads</div>
+                </div>
+                <div class="status-item">
+                    <div class="val"><?php echo number_format($today); ?></div>
+                    <div class="lab">Leads Today</div>
+                </div>
+                <div class="status-item">
+                    <div class="val">RM <?php echo number_format($total_value ?: 0, 0); ?></div>
+                    <div class="lab">Interest Value</div>
+                </div>
             </div>
         </div>
         
-        <style>
-            .stat-box { background: #fff; padding: 20px; border-radius: 8px; border-left: 4px solid #198754; }
-            .stat-box h3 { margin: 0; font-size: 28px; color: #198754; }
-            .stat-box p { margin: 5px 0 0; color: #666; }
-            .leads-table { background: #fff; border-radius: 8px; overflow: hidden; margin-top: 20px; }
-            .leads-table table { width: 100%; border-collapse: collapse; }
-            .leads-table th { background: #f8f9fa; padding: 12px; text-align: left; font-weight: 600; }
-            .leads-table td { padding: 12px; border-bottom: 1px solid #eee; }
-        </style>
-        
-        <div class="leads-table">
-            <table>
+        <div class="tls-card">
+            <div class="card-header">
+                <span class="dashicons dashicons-list-view"></span>
+                <h2>Recent Lead Activity</h2>
+            </div>
+            <table class="tls-table">
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Tanah</th>
-                        <th>Harga</th>
+                        <th>Property</th>
+                        <th>Listing Price</th>
                         <th>Source</th>
-                        <th>Tarikh</th>
+                        <th>Date & Time</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($leads as $lead): ?>
                     <tr>
-                        <td><strong>#<?php echo $lead['id']; ?></strong></td>
+                        <td><span class="badge badge-info">#<?php echo $lead['id']; ?></span></td>
                         <td>
                             <?php if ($lead['tanah_id']): ?>
-                            <a href="<?php echo get_edit_post_link($lead['tanah_id']); ?>" target="_blank">
+                            <a href="<?php echo get_edit_post_link($lead['tanah_id']); ?>" target="_blank" style="text-decoration:none; font-weight:600; color:var(--tls-text-main);">
                                 <?php echo esc_html($lead['tanah_title']); ?>
                             </a>
                             <?php else: ?>
                             <?php echo esc_html($lead['tanah_title']); ?>
                             <?php endif; ?>
                         </td>
-                        <td>RM <?php echo number_format($lead['tanah_price'], 2); ?></td>
-                        <td><span style="background:#25d366;color:#fff;padding:3px 8px;border-radius:4px;font-size:12px;">WhatsApp</span></td>
-                        <td><?php echo date('d/m/Y H:i', strtotime($lead['created_at'])); ?></td>
+                        <td><strong>RM <?php echo number_format($lead['tanah_price'], 2); ?></strong></td>
+                        <td><span class="badge badge-success">WhatsApp</span></td>
+                        <td>
+                            <div style="font-size:13px; color:var(--tls-text-main);"><?php echo date('d M Y', strtotime($lead['created_at'])); ?></div>
+                            <div style="font-size:11px; color:var(--tls-text-muted);"><?php echo date('H:i A', strtotime($lead['created_at'])); ?></div>
+                        </td>
                     </tr>
                     <?php endforeach; ?>
                     <?php if (empty($leads)): ?>
-                    <tr><td colspan="5" style="text-align:center; padding:30px;">Tiada lead lagi.</td></tr>
+                    <tr><td colspan="5" style="text-align:center; padding:60px; color:var(--tls-text-muted);">
+                        <span class="dashicons dashicons-info" style="font-size:40px; width:40px; height:40px; display:block; margin:0 auto 10px;"></span>
+                        Tiada lead lagi.
+                    </td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
@@ -2640,8 +2676,8 @@ function tls_ldc_generate_html_report($data, $estimate_id) {
     </div>
     
     <div class="footer">
-        <p><strong>Tanah Lot Sabah</strong> - Partner Tanah Anda di Sabah</p>
-        <p>Website: tanahlotsabah.com | WhatsApp: +60123456789</p>
+        <p><strong>' . esc_html(get_theme_mod('company_name', 'Tanah Lot Sabah')) . '</strong> - Partner Tanah Anda di Sabah</p>
+        <p>Website: ' . esc_html(str_replace(['https://', 'http://', '/'], '', home_url())) . ' | WhatsApp: +' . esc_html(get_theme_mod('whatsapp_number', '601126661706')) . '</p>
     </div>
 </body>
 </html>';
@@ -3010,7 +3046,7 @@ add_action('admin_menu', function() {
     add_submenu_page('tls-dashboard', 'Calculator Agents', 'Calculator Agents', 'manage_options', 'tls-calculator-agents', 'tls_ldc_agents_page');
 
     // Content
-    // add_submenu_page('tls-dashboard', 'Hero Videos', 'Hero Videos', 'manage_options', 'tls-hero-videos', 'tls_hero_videos_page');
+    add_submenu_page('tls-dashboard', 'Hero Videos', 'Hero Videos', 'manage_options', 'tls-hero-videos', 'tls_hero_videos_page');
 
     // Settings
     add_submenu_page('tls-dashboard', 'Login Security', 'Login Security', 'manage_options', 'tls-login-security', 'tls_login_security_page');
@@ -3021,7 +3057,7 @@ add_action('admin_menu', function() {
     add_submenu_page('tls-dashboard', 'Construction Templates', 'Construction Templates', 'manage_options', 'tls-construction-templates', 'tls_construction_templates_page');
     add_submenu_page('tls-dashboard', 'Purchase Calculator Settings', 'Purchase Calculator', 'manage_options', 'tls-purchase-calculator', 'tls_purchase_calculator_settings_page');
     add_submenu_page('tls-dashboard', 'App Download', 'App Download', 'manage_options', 'tls-app-download', 'tls_app_download_page');
-});
+}, 5);
 
 // ============================================
 // LOGIN SECURITY SETTINGS PAGE
@@ -3031,74 +3067,93 @@ function tls_login_security_page() {
     if (isset($_POST['tls_login_security_nonce']) && wp_verify_nonce($_POST['tls_login_security_nonce'], 'tls_login_security_save')) {
         $disable_wp_login = isset($_POST['disable_wp_login']) ? 1 : 0;
         update_option('tls_disable_wp_login', $disable_wp_login);
-        echo '<div class="notice notice-success is-dismissible"><p>Login security settings saved!</p></div>';
+        echo '<div class="notice notice-success is-dismissible" style="border-radius:8px; margin: 20px 0;"><p><strong>Login security settings saved!</strong></p></div>';
     }
 
     $disable_wp_login = get_option('tls_disable_wp_login', 0);
     ?>
-    <div class="wrap">
-        <h1><span class="dashicons dashicons-lock"></span> Login Security Settings</h1>
-        <p class="description">Control access to WordPress default login page (wp-login.php)</p>
-
-        <form method="post" style="margin-top: 30px;">
-            <?php wp_nonce_field('tls_login_security_save', 'tls_login_security_nonce'); ?>
-
-            <table class="form-table">
-                <tr>
-                    <th scope="row">
-                        <label for="disable_wp_login">Disable wp-login.php</label>
-                    </th>
-                    <td>
-                        <label for="disable_wp_login" style="display: flex; align-items: center; gap: 10px;">
-                            <input type="checkbox" name="disable_wp_login" id="disable_wp_login" value="1" <?php checked($disable_wp_login, 1); ?>>
-                            <span>Block access to WordPress default login page</span>
-                        </label>
-                        <p class="description" style="margin-top: 10px;">
-                            <strong>When enabled:</strong> wp-login.php will redirect to homepage<br>
-                            <strong>Users must login via:</strong> <code><?php echo home_url('/login/'); ?></code><br>
-                            <strong>When disabled:</strong> Both wp-login.php and custom login page work
-                        </p>
-                    </td>
-                </tr>
-            </table>
-
-            <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107;">
-                <h3 style="margin-top: 0; color: #856404;"><span class="dashicons dashicons-warning"></span> Important Notes</h3>
-                <ul style="margin: 10px 0;">
-                    <li><strong>Custom Login Page:</strong> Your theme has a custom login at <code>/login/</code></li>
-                    <li><strong>Admin Access:</strong> You can always access admin if already logged in</li>
-                    <li><strong>Emergency Access:</strong> If locked out, disable via database:<br>
-                        <code>UPDATE wp_options SET option_value='0' WHERE option_name='tls_disable_wp_login';</code>
-                    </li>
-                </ul>
-            </div>
-
-            <?php submit_button('Save Security Settings'); ?>
-        </form>
-
-        <div style="margin-top: 30px; padding: 20px; background: #f0f6fc; border-left: 4px solid #0969da;">
-            <h3 style="margin-top: 0;"><span class="dashicons dashicons-clipboard"></span> Current Status</h3>
-            <table style="width: 100%; max-width: 600px;">
-                <tr>
-                    <td style="padding: 8px 0;"><strong>wp-login.php Access:</strong></td>
-                    <td style="padding: 8px 0;">
-                        <?php if ($disable_wp_login): ?>
-                            <span style="color: #dc3545;"><span class="dashicons dashicons-no-alt"></span> Blocked</span>
-                        <?php else: ?>
-                            <span style="color: #28a745;"><span class="dashicons dashicons-yes-alt"></span> Allowed</span>
-                        <?php endif; ?>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="padding: 8px 0;"><strong>Custom Login Page:</strong></td>
-                    <td style="padding: 8px 0;"><span style="color: #28a745;"><span class="dashicons dashicons-yes-alt"></span> Active</span></td>
-                </tr>
-                <tr>
-                    <td style="padding: 8px 0;"><strong>Login URL:</strong></td>
-                    <td style="padding: 8px 0;"><a href="<?php echo home_url('/login/'); ?>" target="_blank"><?php echo home_url('/login/'); ?></a></td>
-                </tr>
-            </table>
+    <div class="wrap tls-admin-modern">
+        <div class="tls-admin-header">
+            <h1><span class="dashicons dashicons-lock"></span> Login Security Settings</h1>
+            <p>Control access to WordPress default login page and enhance system security.</p>
         </div>
+
+        <form method="post">
+            <?php wp_nonce_field('tls_login_security_save', 'tls_login_security_nonce'); ?>
+            
+            <div class="tls-grid-layout">
+                <div class="tls-grid-col main-col">
+                    <div class="tls-card">
+                        <div class="card-header">
+                            <span class="dashicons dashicons-shield"></span>
+                            <h2>Access Control</h2>
+                        </div>
+                        
+                        <div class="tls-form-row">
+                            <label for="disable_wp_login" style="display: flex; align-items: flex-start; gap: 12px; cursor: pointer;">
+                                <input type="checkbox" name="disable_wp_login" id="disable_wp_login" value="1" <?php checked($disable_wp_login, 1); ?> style="margin-top: 4px;">
+                                <div>
+                                    <strong>Disable wp-login.php</strong>
+                                    <p class="description" style="margin-top: 4px;">
+                                        Redirect all traffic from standard WordPress login to your custom theme login page.
+                                    </p>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div style="margin-top: 30px;">
+                            <button type="submit" class="btn btn-primary">
+                                <span class="dashicons dashicons-saved"></span> Save Security Settings
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="tls-card">
+                        <div class="card-header">
+                            <span class="dashicons dashicons-warning"></span>
+                            <h2>Emergency Access & Recovery</h2>
+                        </div>
+                        <div style="background: #fff7ed; border: 1px solid #ffedd5; padding: 20px; border-radius: 10px;">
+                            <ul style="margin: 0; padding-left: 20px; color: #9a3412; display: flex; flex-direction: column; gap: 10px;">
+                                <li><strong>Custom Login:</strong> Your theme has a custom login at <code>/login/</code></li>
+                                <li><strong>Admin Access:</strong> You can always access admin if already logged in.</li>
+                                <li><strong>DB Override:</strong> If locked out, run this SQL:<br>
+                                    <code style="background: rgba(255,255,255,0.5); padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 5px;">UPDATE wp_options SET option_value='0' WHERE option_name='tls_disable_wp_login';</code>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tls-grid-col side-col">
+                    <div class="tls-card">
+                        <div class="card-header">
+                            <span class="dashicons dashicons-visibility"></span>
+                            <h2>System Status</h2>
+                        </div>
+                        <div class="preview-section">
+                            <h4>WP-Login Access</h4>
+                            <div class="preview-list">
+                                <?php if ($disable_wp_login): ?>
+                                    <span style="color: #dc2626; background: #fef2f2; font-weight: 600;">BLOCKED (Redirecting)</span>
+                                <?php else: ?>
+                                    <span style="color: #16a34a; background: #f0fdf4; font-weight: 600;">ALLOWED (Standard)</span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <hr style="border:0; border-top: 1px solid #f1f5f9; margin: 20px 0;">
+                        <div class="preview-section">
+                            <h4>Login URL</h4>
+                            <div class="preview-list">
+                                <a href="<?php echo home_url('/login/'); ?>" target="_blank" style="text-decoration:none;">
+                                    <span><?php echo home_url('/login/'); ?></span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
     </div>
     <?php
 }
@@ -3134,29 +3189,33 @@ function tls_agents_admin_page() {
     ]);
     
     ?>
-    <div class="wrap">
-        <h1>Property Agents
-            <a href="<?php echo admin_url('post-new.php?post_type=tls_agent'); ?>" class="page-title-action">Add New Agent</a>
-        </h1>
-        
-        <style>
-        .agent-list { background: #fff; border-radius: 8px; margin-top: 20px; }
-        .agent-list table { width: 100%; border-collapse: collapse; }
-        .agent-list th { background: #f8f9fa; padding: 15px; text-align: left; font-weight: 600; }
-        .agent-list td { padding: 15px; border-bottom: 1px solid #eee; vertical-align: middle; }
-        .agent-avatar { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; background: #eee; }
-        </style>
-        
-        <div class="agent-list">
-            <table>
+    <div class="wrap tls-admin-modern">
+        <div class="tls-admin-header">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h1><span class="dashicons dashicons-groups"></span> Property Agents</h1>
+                    <p>Manage your professional real estate agents and their contact profiles.</p>
+                </div>
+                <a href="<?php echo admin_url('post-new.php?post_type=tls_agent'); ?>" class="btn btn-primary">
+                    <span class="dashicons dashicons-plus"></span> Add New Agent
+                </a>
+            </div>
+        </div>
+
+        <div class="tls-card">
+            <div class="card-header">
+                <span class="dashicons dashicons-list-view"></span>
+                <h2>Active Agent Roster</h2>
+            </div>
+            
+            <table class="tls-table">
                 <thead>
                     <tr>
-                        <th>Photo</th>
+                        <th style="width: 80px;">Photo</th>
                         <th>Name</th>
-                        <th>Company</th>
-                        <th>License</th>
-                        <th>Contact</th>
-                        <th>Actions</th>
+                        <th>Company & License</th>
+                        <th>Contact Channels</th>
+                        <th style="text-align: right;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -3173,29 +3232,58 @@ function tls_agents_admin_page() {
                         <tr>
                             <td>
                                 <?php if ($avatar): ?>
-                                <img src="<?php echo esc_attr($avatar); ?>" class="agent-avatar">
+                                    <img src="<?php echo esc_attr($avatar); ?>" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #f1f5f9;">
                                 <?php else: ?>
-                                <div class="agent-avatar"></div>
+                                    <div style="width: 50px; height: 50px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #94a3b8;">
+                                        <span class="dashicons dashicons-admin-users"></span>
+                                    </div>
                                 <?php endif; ?>
                             </td>
-                            <td><strong><?php the_title(); ?></strong></td>
-                            <td><?php echo esc_html($company ?: '-'); ?></td>
-                            <td><?php echo esc_html($license ?: '-'); ?></td>
                             <td>
-                                <?php if ($whatsapp): ?><a href="https://wa.me/<?php echo esc_attr($whatsapp); ?>" target="_blank">WhatsApp</a><?php endif; ?>
-                                <?php if ($phone): ?> | <?php echo esc_html($phone); ?><?php endif; ?>
+                                <div style="font-weight: 700; color: #1e293b;"><?php the_title(); ?></div>
+                                <div style="font-size: 12px; color: #64748b;"><?php echo esc_html($email ?: 'No email'); ?></div>
                             </td>
                             <td>
-                                <a href="<?php echo admin_url('post.php?post=' . $post_id . '&action=edit'); ?>">Edit</a> |
-                                <a href="<?php echo admin_url('admin.php?page=tls-agents&action=delete&post_id=' . $post_id); ?>" onclick="return confirm('Delete this agent?')" style="color:#dc3545;">Delete</a>
+                                <div style="font-weight: 600;"><?php echo esc_html($company ?: '-'); ?></div>
+                                <div style="font-size: 12px; color: #94a3b8;"><?php echo esc_html($license ?: 'No license info'); ?></div>
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 8px;">
+                                    <?php if ($whatsapp): ?>
+                                        <a href="https://wa.me/<?php echo esc_attr($whatsapp); ?>" target="_blank" class="badge badge-success" style="text-decoration: none;">WhatsApp</a>
+                                    <?php endif; ?>
+                                    <?php if ($phone): ?>
+                                        <span class="badge badge-info"><?php echo esc_html($phone); ?></span>
+                                    <?php endif; ?>
+                                </div>
+                            </td>
+                            <td style="text-align: right;">
+                                <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                                    <a href="<?php echo admin_url('post.php?post=' . $post_id . '&action=edit'); ?>" class="btn btn-secondary" style="padding: 6px 12px;">
+                                        Edit
+                                    </a>
+                                    <a href="<?php echo admin_url('admin.php?page=tls-agents&action=delete&post_id=' . $post_id); ?>" 
+                                       onclick="return confirm('Permanently delete this agent?')" 
+                                       class="btn btn-danger" style="padding: 6px 12px;">
+                                        Delete
+                                    </a>
+                                </div>
                             </td>
                         </tr>
-                        <?php endwhile; ?>
-                        <?php wp_reset_postdata(); ?>
+                        <?php endwhile; wp_reset_postdata(); ?>
                     <?php else: ?>
-                        <tr><td colspan="6" style="text-align:center;padding:40px;color:#666;">
-                            No agents yet. <a href="<?php echo admin_url('post-new.php?post_type=tls_agent'); ?>">Add your first agent</a>
-                        </td></tr>
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 60px 0;">
+                                <div style="color: #94a3b8; margin-bottom: 20px;">
+                                    <span class="dashicons dashicons-admin-users" style="font-size: 48px; width: 48px; height: 48px;"></span>
+                                </div>
+                                <h3 style="margin: 0; color: #475569;">No Agents Found</h3>
+                                <p style="color: #64748b;">Start by adding your first real estate agent to the roster.</p>
+                                <a href="<?php echo admin_url('post-new.php?post_type=tls_agent'); ?>" class="btn btn-primary" style="margin-top: 20px;">
+                                    Add New Agent
+                                </a>
+                            </td>
+                        </tr>
                     <?php endif; ?>
                 </tbody>
             </table>
@@ -3204,24 +3292,31 @@ function tls_agents_admin_page() {
     <?php
 }
 
-// Hero Videos Admin Page
-function tls_hero_videos_page() {
-    $action = isset($_GET['action']) ? $_GET['action'] : 'list';
+// Hero Videos Admin Actions (handled before HTML output)
+add_action('admin_init', function() {
+    $page = isset($_GET['page']) ? $_GET['page'] : '';
+    if ($page !== 'tls-hero-videos') return;
+    if (!current_user_can('manage_options')) return;
+
+    $action = isset($_GET['action']) ? $_GET['action'] : '';
     $post_id = isset($_GET['post_id']) ? intval($_GET['post_id']) : 0;
-    
+
     if ($action === 'delete' && $post_id) {
         wp_delete_post($post_id, true);
         wp_redirect(admin_url('admin.php?page=tls-hero-videos'));
         exit;
     }
-    
+
     if ($action === 'toggle' && $post_id) {
         $current = get_post_meta($post_id, 'hero_is_active', true);
         update_post_meta($post_id, 'hero_is_active', $current ? 0 : 1);
         wp_redirect(admin_url('admin.php?page=tls-hero-videos'));
         exit;
     }
-    
+});
+
+// Hero Videos Admin Page
+function tls_hero_videos_page() {
     $videos = new WP_Query([
         'post_type' => 'hero_video',
         'posts_per_page' => -1,
@@ -3356,170 +3451,105 @@ function tls_dashboard_page() {
     $recent_leads = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}tls_leads ORDER BY created_at DESC LIMIT 5");
 
     ?>
-    <div class="wrap tls-dashboard-wrap">
-        <h1 class="tls-dashboard-title">TLS System Dashboard</h1>
-        <p class="tls-dashboard-subtitle">Welcome to your property management system</p>
-
-        <!-- Statistics Cards -->
-        <div class="tls-stats-grid">
-            <div class="tls-stat-card tls-stat-primary">
-                <div class="tls-stat-icon">
-                    <span class="dashicons dashicons-location-alt"></span>
-                </div>
-                <div class="tls-stat-content">
-                    <div class="tls-stat-number"><?php echo number_format($tanah_count); ?></div>
-                    <div class="tls-stat-label">Properties</div>
-                </div>
-                <a href="<?php echo admin_url('edit.php?post_type=tanah'); ?>" class="tls-stat-link">View All →</a>
-            </div>
-
-            <div class="tls-stat-card tls-stat-success">
-                <div class="tls-stat-icon">
-                    <span class="dashicons dashicons-businessperson"></span>
-                </div>
-                <div class="tls-stat-content">
-                    <div class="tls-stat-number"><?php echo number_format($leads_count); ?></div>
-                    <div class="tls-stat-label">Property Leads</div>
-                </div>
-                <a href="<?php echo admin_url('admin.php?page=tls-leads'); ?>" class="tls-stat-link">Manage →</a>
-            </div>
-
-            <div class="tls-stat-card tls-stat-info">
-                <div class="tls-stat-icon">
-                    <span class="dashicons dashicons-calculator"></span>
-                </div>
-                <div class="tls-stat-content">
-                    <div class="tls-stat-number"><?php echo number_format($calc_leads); ?></div>
-                    <div class="tls-stat-label">Calculator Leads</div>
-                </div>
-                <a href="<?php echo admin_url('admin.php?page=tls-calculator'); ?>" class="tls-stat-link">View →</a>
-            </div>
-
-            <div class="tls-stat-card tls-stat-warning">
-                <div class="tls-stat-icon">
-                    <span class="dashicons dashicons-groups"></span>
-                </div>
-                <div class="tls-stat-content">
-                    <div class="tls-stat-number"><?php echo number_format($agents_count); ?></div>
-                    <div class="tls-stat-label">Agents</div>
-                </div>
-                <a href="<?php echo admin_url('admin.php?page=tls-agents'); ?>" class="tls-stat-link">Manage →</a>
-            </div>
+    <div class="wrap tls-admin-modern">
+        <div class="tls-admin-header">
+            <h1><span class="dashicons dashicons-admin-site-alt3"></span> TLS System Dashboard</h1>
+            <p>Welcome to your professional property management command center.</p>
         </div>
 
-        <!-- Quick Links -->
-        <div class="tls-quick-actions">
-            <h2>Quick Actions</h2>
-            <div class="tls-action-buttons">
-                <a href="<?php echo admin_url('post-new.php?post_type=tanah'); ?>" class="button button-primary button-hero">
-                    <span class="dashicons dashicons-plus-alt" style="margin-top:3px;"></span> Add New Property
-                </a>
-                <a href="<?php echo admin_url('edit.php?post_type=tanah'); ?>" class="button button-secondary button-hero">
-                    <span class="dashicons dashicons-edit" style="margin-top:3px;"></span> Draw Boundary
-                </a>
-                <a href="<?php echo admin_url('admin.php?page=tls-settings'); ?>" class="button button-secondary button-hero">
-                    <span class="dashicons dashicons-admin-generic" style="margin-top:3px;"></span> Settings
-                </a>
+        <div class="tls-grid-layout">
+            <div class="tls-grid-col main-col">
+                <!-- Statistics Cards -->
+                <div class="tls-card">
+                    <div class="card-header">
+                        <span class="dashicons dashicons-chart-pie"></span>
+                        <h2>Key Statistics</h2>
+                    </div>
+                    <div class="status-grid">
+                        <div class="status-item active">
+                            <div class="val"><?php echo number_format($tanah_count); ?></div>
+                            <div class="lab">Total Properties</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="val"><?php echo number_format($leads_count); ?></div>
+                            <div class="lab">Property Leads</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="val"><?php echo number_format($calc_leads); ?></div>
+                            <div class="lab">Calculator Leads</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="val"><?php echo number_format($agents_count); ?></div>
+                            <div class="lab">Active Agents</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="tls-card">
+                    <div class="card-header">
+                        <span class="dashicons dashicons-list-view"></span>
+                        <h2>Recent Property Leads</h2>
+                    </div>
+                    <?php if ($recent_leads): ?>
+                        <table class="tls-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Contact</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($recent_leads as $lead): ?>
+                                    <tr>
+                                        <td><strong><?php echo esc_html($lead->name); ?></strong></td>
+                                        <td><?php echo esc_html($lead->email); ?><br><small><?php echo esc_html($lead->phone); ?></small></td>
+                                        <td><?php echo date('d M Y', strtotime($lead->created_at)); ?></td>
+                                        <td><a href="<?php echo admin_url('admin.php?page=tls-leads'); ?>" class="button button-small">View</a></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    <?php else: ?>
+                        <p class="description">No recent leads found.</p>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <div class="tls-grid-col side-col">
+                <div class="tls-card">
+                    <div class="card-header">
+                        <span class="dashicons dashicons-admin-links"></span>
+                        <h2>Quick Actions</h2>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="<?php echo admin_url('post-new.php?post_type=tanah'); ?>" class="btn btn-primary" style="width:100%;">
+                            <span class="dashicons dashicons-plus"></span> Add New Property
+                        </a>
+                        <a href="<?php echo admin_url('admin.php?page=tls-property-crud'); ?>" class="btn btn-secondary" style="width:100%;">
+                            <span class="dashicons dashicons-portfolio"></span> Manage Portfolio
+                        </a>
+                        <a href="<?php echo admin_url('admin.php?page=tls-seed-data'); ?>" class="btn btn-secondary" style="width:100%;">
+                            <span class="dashicons dashicons-database-import"></span> Seed Test Data
+                        </a>
+                    </div>
+                </div>
+
+                <div class="tls-card">
+                    <div class="card-header">
+                        <span class="dashicons dashicons-info"></span>
+                        <h2>System Info</h2>
+                    </div>
+                    <div class="preview-list">
+                        <span>Theme Version: <?php echo TLS_VERSION; ?></span>
+                        <span>WordPress: <?php bloginfo('version'); ?></span>
+                        <span>PHP Version: <?php echo phpversion(); ?></span>
+                    </div>
+                </div>
             </div>
         </div>
-
-        <style>
-            .tls-dashboard-wrap { max-width: 1400px; }
-            .tls-dashboard-title { font-size: 32px; margin-bottom: 8px; color: #1e293b; }
-            .tls-dashboard-subtitle { font-size: 16px; color: #64748b; margin-bottom: 30px; }
-
-            .tls-stats-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-                gap: 20px;
-                margin-bottom: 40px;
-            }
-
-            .tls-stat-card {
-                background: white;
-                border-radius: 12px;
-                padding: 24px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                border-left: 4px solid #cbd5e1;
-                transition: all 0.3s ease;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
-            }
-
-            .tls-stat-card:hover {
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                transform: translateY(-2px);
-            }
-
-            .tls-stat-primary { border-left-color: #3b82f6; }
-            .tls-stat-success { border-left-color: #10b981; }
-            .tls-stat-info { border-left-color: #8b5cf6; }
-            .tls-stat-warning { border-left-color: #f59e0b; }
-
-            .tls-stat-icon {
-                width: 48px;
-                height: 48px;
-                border-radius: 10px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                background: #f1f5f9;
-            }
-
-            .tls-stat-primary .tls-stat-icon { background: #eff6ff; color: #3b82f6; }
-            .tls-stat-success .tls-stat-icon { background: #f0fdf4; color: #10b981; }
-            .tls-stat-info .tls-stat-icon { background: #f5f3ff; color: #8b5cf6; }
-            .tls-stat-warning .tls-stat-icon { background: #fffbeb; color: #f59e0b; }
-
-            .tls-stat-icon .dashicons { font-size: 24px; width: 24px; height: 24px; }
-
-            .tls-stat-content { flex: 1; }
-
-            .tls-stat-number {
-                font-size: 36px;
-                font-weight: 700;
-                color: #1e293b;
-                line-height: 1;
-                margin-bottom: 8px;
-            }
-
-            .tls-stat-label {
-                font-size: 14px;
-                color: #64748b;
-                font-weight: 500;
-            }
-
-            .tls-stat-link {
-                color: #3b82f6;
-                text-decoration: none;
-                font-size: 14px;
-                font-weight: 600;
-                transition: color 0.2s;
-            }
-
-            .tls-stat-link:hover { color: #2563eb; }
-
-            .tls-quick-actions h2 {
-                font-size: 20px;
-                color: #1e293b;
-                margin-bottom: 16px;
-            }
-
-            .tls-action-buttons {
-                display: flex;
-                gap: 12px;
-                flex-wrap: wrap;
-            }
-
-            .tls-action-buttons .button-hero {
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;
-                padding: 12px 24px;
-                font-size: 14px;
-            }
-        </style>
     </div>
     <?php
 }
@@ -3717,73 +3747,80 @@ function tls_ldc_admin_page() {
     $stats = TLS_LDC_Database::get_estimate_stats();
     $estimates = TLS_LDC_Database::get_all_estimates(50);
     ?>
-    <div class="wrap">
-        <h1>Land Development Calculator - Leads</h1>
+    <div class="wrap tls-admin-modern">
+        <div class="tls-admin-header">
+            <h1><span class="dashicons dashicons-chart-bar"></span> Land Development Calculator - Leads</h1>
+            <p>Monitor and manage calculator leads generated by agents and clients.</p>
+        </div>
         
-        <div class="ldc-admin-stats">
-            <div class="stat-card">
-                <h3><?php echo $stats['total']; ?></h3>
-                <p>Total Leads</p>
+        <div class="tls-card">
+            <div class="card-header">
+                <span class="dashicons dashicons-performance"></span>
+                <h2>Performance Overview</h2>
             </div>
-            <div class="stat-card">
-                <h3>RM <?php echo number_format($stats['total_value'], 2); ?></h3>
-                <p>Total Value</p>
-            </div>
-            <div class="stat-card">
-                <h3><?php echo $stats['today']; ?></h3>
-                <p>Today</p>
-            </div>
-            <div class="stat-card">
-                <h3><?php echo $stats['week']; ?></h3>
-                <p>This Week</p>
+            <div class="status-grid">
+                <div class="status-item active">
+                    <div class="val"><?php echo number_format($stats['total']); ?></div>
+                    <div class="lab">Total Leads</div>
+                </div>
+                <div class="status-item">
+                    <div class="val">RM <?php echo number_format($stats['total_value'], 0); ?></div>
+                    <div class="lab">Total Value</div>
+                </div>
+                <div class="status-item">
+                    <div class="val"><?php echo number_format($stats['today']); ?></div>
+                    <div class="lab">Today</div>
+                </div>
+                <div class="status-item">
+                    <div class="val"><?php echo number_format($stats['week']); ?></div>
+                    <div class="lab">This Week</div>
+                </div>
             </div>
         </div>
         
-        <style>
-            .ldc-admin-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 30px 0; }
-            .stat-card { background: #fff; padding: 20px; border-radius: 8px; border-left: 4px solid #2c5f2d; }
-            .stat-card h3 { margin: 0; font-size: 28px; color: #2c5f2d; }
-            .stat-card p { margin: 5px 0 0; color: #666; }
-            .ldc-admin-table { background: #fff; border-radius: 8px; overflow: hidden; margin-top: 20px; }
-            .ldc-admin-table table { width: 100%; border-collapse: collapse; }
-            .ldc-admin-table th { background: #f0f0f0; padding: 12px; text-align: left; font-weight: 600; }
-            .ldc-admin-table td { padding: 12px; border-bottom: 1px solid #eee; }
-            .ldc-admin-table tr:hover { background: #f9f9f9; }
-        </style>
-        
-        <div class="ldc-admin-table">
-            <table>
+        <div class="tls-card">
+            <div class="card-header">
+                <span class="dashicons dashicons-list-view"></span>
+                <h2>Recent Leads Activity</h2>
+            </div>
+            <table class="tls-table">
                 <thead>
                     <tr>
                         <th>ID</th>
                         <th>Klien</th>
-                        <th>Email</th>
-                        <th>Telefon</th>
-                        <th>Saiz</th>
-                        <th>Lokasi</th>
-                        <th>Kos</th>
+                        <th>Email / Telefon</th>
+                        <th>Saiz & Lokasi</th>
+                        <th>Kos Anggaran</th>
                         <th>Agent</th>
                         <th>Tarikh</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($estimates as $est): 
-                        $items = json_decode($est['items'], true);
-                    ?>
+                    <?php foreach ($estimates as $est): ?>
                     <tr>
-                        <td><strong>#<?php echo $est['id']; ?></strong></td>
-                        <td><?php echo esc_html($est['client_name']); ?></td>
-                        <td><a href="mailto:<?php echo esc_attr($est['client_email']); ?>"><?php echo esc_html($est['client_email']); ?></a></td>
-                        <td><a href="https://wa.me/<?php echo esc_attr($est['client_phone']); ?>" target="_blank">+<?php echo esc_html($est['client_phone']); ?></a></td>
-                        <td><?php echo number_format($est['land_size'], 2); ?> <?php echo esc_html($est['land_unit']); ?></td>
-                        <td><?php echo esc_html($est['location']); ?></td>
-                        <td><strong>RM <?php echo number_format($est['total_cost'], 2); ?></strong></td>
-                        <td><?php echo esc_html($est['agent_id']); ?></td>
-                        <td><?php echo date('d/m/Y H:i', strtotime($est['created_at'])); ?></td>
+                        <td><span class="badge badge-info">#<?php echo $est['id']; ?></span></td>
+                        <td><strong><?php echo esc_html($est['client_name']); ?></strong></td>
+                        <td>
+                            <div style="font-size:13px; color:var(--tls-text-main);"><?php echo esc_html($est['client_email']); ?></div>
+                            <div style="font-size:11px; color:var(--tls-text-muted);">+<?php echo esc_html($est['client_phone']); ?></div>
+                        </td>
+                        <td>
+                            <div style="font-size:13px; color:var(--tls-text-main);"><?php echo number_format($est['land_size'], 2); ?> <?php echo esc_html($est['land_unit']); ?></div>
+                            <div style="font-size:11px; color:var(--tls-text-muted);"><?php echo esc_html($est['location']); ?></div>
+                        </td>
+                        <td><strong style="color:var(--tls-success);">RM <?php echo number_format($est['total_cost'], 2); ?></strong></td>
+                        <td><span class="badge badge-success"><?php echo esc_html($est['agent_id']); ?></span></td>
+                        <td>
+                            <div style="font-size:12px; color:var(--tls-text-main);"><?php echo date('d M Y', strtotime($est['created_at'])); ?></div>
+                            <div style="font-size:11px; color:var(--tls-text-muted);"><?php echo date('H:i A', strtotime($est['created_at'])); ?></div>
+                        </td>
                     </tr>
                     <?php endforeach; ?>
                     <?php if (empty($estimates)): ?>
-                    <tr><td colspan="9" style="text-align:center; padding:30px;">Tiada lead lagi.</td></tr>
+                    <tr><td colspan="7" style="text-align:center; padding:60px; color:var(--tls-text-muted);">
+                        <span class="dashicons dashicons-info" style="font-size:40px; width:40px; height:40px; display:block; margin:0 auto 10px;"></span>
+                        Tiada lead lagi.
+                    </td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
@@ -3795,43 +3832,52 @@ function tls_ldc_admin_page() {
 function tls_ldc_agents_page() {
     $agents = TLS_LDC_Database::get_all_agents();
     ?>
-    <div class="wrap">
-        <h1>Agents Management</h1>
-        
-        <style>
-            .agent-card { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-            .agent-info h3 { margin: 0 0 5px; }
-            .agent-info p { margin: 3px 0; color: #666; font-size: 14px; }
-            .agent-badge { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
-            .agent-badge.admin { background: #e3f2fd; color: #1565c0; }
-            .agent-badge.active { background: #e8f5e9; color: #2e7d32; }
-            .agent-badge.inactive { background: #ffebee; color: #c62828; }
-        </style>
-        
-        <h2 style="margin-top:30px;">Senarai Ejen</h2>
-        
-        <?php foreach ($agents as $agent): ?>
-        <div class="agent-card">
-            <div class="agent-info">
-                <h3><?php echo esc_html($agent['name']); ?> (<?php echo esc_html($agent['id']); ?>)</h3>
-                <p><?php echo esc_html($agent['email']); ?> | <?php echo esc_html($agent['phone']); ?></p>
-                <p>Last Login: <?php echo $agent['last_login'] ? date('d/m/Y H:i', strtotime($agent['last_login'])) : 'Never'; ?></p>
-            </div>
-            <div>
-                <?php if ($agent['is_admin']): ?>
-                <span class="agent-badge admin">Admin</span>
-                <?php endif; ?>
-                <span class="agent-badge <?php echo $agent['is_active'] ? 'active' : 'inactive'; ?>">
-                    <?php echo $agent['is_active'] ? 'Active' : 'Inactive'; ?>
-                </span>
-            </div>
+    <div class="wrap tls-admin-modern">
+        <div class="tls-admin-header">
+            <h1><span class="dashicons dashicons-groups"></span> Agents Management</h1>
+            <p>Manage calculator access for your property consultants and administrators.</p>
         </div>
-        <?php endforeach; ?>
+
+        <div class="tls-grid-layout" style="grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 20px;">
+            <?php foreach ($agents as $agent): ?>
+            <div class="tls-card agent-card">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                    <div>
+                        <h3 style="margin:0; font-size:18px; color:var(--tls-text-main);">
+                            <?php echo esc_html($agent['name']); ?>
+                        </h3>
+                        <span style="font-size:12px; color:var(--tls-text-muted); font-family: monospace; background: var(--tls-bg-soft); padding: 2px 6px; border-radius: 4px;">ID: <?php echo esc_html($agent['id']); ?></span>
+                    </div>
+                    <div style="display: flex; gap: 5px;">
+                        <?php if ($agent['is_admin']): ?>
+                        <span class="badge badge-info">Admin</span>
+                        <?php endif; ?>
+                        <span class="badge <?php echo $agent['is_active'] ? 'badge-success' : 'badge-danger'; ?>">
+                            <?php echo $agent['is_active'] ? 'Active' : 'Inactive'; ?>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="preview-list">
+                    <span><span class="dashicons dashicons-email" style="font-size:16px; margin-right:8px; color:var(--tls-primary);"></span> <?php echo esc_html($agent['email']); ?></span>
+                    <span><span class="dashicons dashicons-phone" style="font-size:16px; margin-right:8px; color:var(--tls-primary);"></span> <?php echo esc_html($agent['phone']); ?></span>
+                    <span><span class="dashicons dashicons-clock" style="font-size:16px; margin-right:8px; color:var(--tls-primary);"></span> Last Login: <?php echo $agent['last_login'] ? date('d M Y, H:i', strtotime($agent['last_login'])) : 'Never'; ?></span>
+                </div>
+
+                <div style="margin-top:20px; padding-top:15px; border-top:1px solid var(--tls-border); display:flex; gap:10px;">
+                    <a href="#" class="btn btn-secondary btn-sm" style="flex:1; text-align:center; text-decoration:none;">Edit Profile</a>
+                    <a href="#" class="btn btn-secondary btn-sm" style="flex:1; text-align:center; text-decoration:none;">View Leads</a>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
         
-        <div style="background: #fff3cd; padding: 20px; border-radius: 8px; margin-top: 30px;">
-            <h3>Default Login</h3>
-            <p><strong>Agent ID:</strong> TLS001 - TLS005</p>
-            <p><strong>Password:</strong> demo123</p>
+        <div class="tls-card" style="margin-top:30px; border-left:4px solid var(--tls-warning); background: #fffbeb;">
+            <div class="card-header">
+                <span class="dashicons dashicons-info" style="color: #d97706;"></span>
+                <h2 style="color: #92400e;">Default Login Credentials</h2>
+            </div>
+            <p style="color: #92400e; margin: 0;">Standard Agent IDs: <strong>TLS001 - TLS005</strong> | Default Password: <code>demo123</code></p>
         </div>
     </div>
     <?php
@@ -3843,47 +3889,62 @@ function tls_ldc_settings_page() {
     if (isset($_POST['save_settings']) && wp_verify_nonce($_POST['settings_nonce'], 'tls_settings')) {
         $show_sticky = isset($_POST['show_sticky']) ? true : false;
         set_theme_mod('show_sticky_calculator', $show_sticky);
-        echo '<div class="notice notice-success"><p>Settings saved!</p></div>';
+        echo '<div class="notice notice-success is-dismissible" style="border-radius:8px;"><p><strong>Success:</strong> Calculator settings saved!</p></div>';
     }
     ?>
-    <div class="wrap">
-        <h1>Calculator Settings</h1>
-        
-        <div style="background: #fff; padding: 30px; border-radius: 8px; margin-top: 20px; max-width: 600px;">
-            <form method="post">
-                <?php wp_nonce_field('tls_settings', 'settings_nonce'); ?>
-                
-                <h2>Display Settings</h2>
-                
-                <table class="form-table">
-                    <tr>
-                        <th scope="row">Floating Calculator Button</th>
-                        <td>
-                            <label>
+    <div class="wrap tls-admin-modern">
+        <div class="tls-admin-header">
+            <h1><span class="dashicons dashicons-admin-settings"></span> Calculator Settings</h1>
+            <p>Configure how the calculator appears and behaves on your website.</p>
+        </div>
+
+        <div class="tls-grid-layout">
+            <div class="tls-grid-col main-col">
+                <form method="post">
+                    <?php wp_nonce_field('tls_settings', 'settings_nonce'); ?>
+                    
+                    <div class="tls-card">
+                        <div class="card-header">
+                            <span class="dashicons dashicons-visibility"></span>
+                            <h2>Display Configuration</h2>
+                        </div>
+                        
+                        <div class="tls-form-row">
+                            <label>Floating Calculator Button</label>
+                            <label style="font-weight: normal; display: block; margin-top: 10px; cursor: pointer;">
                                 <input type="checkbox" name="show_sticky" value="1" <?php checked($show_sticky, true); ?>>
                                 Show floating calculator button on frontend
                             </label>
-                            <p class="description">When enabled, a calculator button will appear at the bottom-right of your website.</p>
-                        </td>
-                    </tr>
-                </table>
-                
-                <p class="submit">
-                    <input type="submit" name="save_settings" class="button button-primary" value="Save Settings">
-                </p>
-            </form>
-            
-            <hr style="margin: 30px 0;">
-            
-            <h2>Theme Integration</h2>
-            <p>This calculator is integrated into the <strong>tls-theme</strong>.</p>
-            
-            <h3 style="margin-top:20px;">Shortcode</h3>
-            <code>[land_dev_calculator]</code>
-            <p>Use this shortcode to display the calculator on any page.</p>
-            
-            <h3 style="margin-top:20px;">Calculator Page</h3>
-            <p>Create a page with slug <code>calculator</code> and template "Land Development Calculator"</p>
+                            <p class="description" style="margin-left: 25px; margin-top: 5px;">When enabled, a sticky calculator trigger will appear at the bottom-right of all pages for quick access.</p>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px;">
+                        <button type="submit" name="save_settings" class="btn btn-primary">
+                            <span class="dashicons dashicons-saved"></span>
+                            Save Calculator Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="tls-grid-col side-col">
+                <div class="tls-card">
+                    <div class="card-header">
+                        <span class="dashicons dashicons-editor-code"></span>
+                        <h2>Theme Integration</h2>
+                    </div>
+                    <p style="font-size: 13px; color: var(--tls-text-muted);">Use this shortcode to embed the calculator on any page or post:</p>
+                    <div style="background:var(--tls-bg-soft); padding:12px; border-radius:8px; font-family:monospace; margin:15px 0; border:1px solid var(--tls-border); color: var(--tls-primary); font-weight: 700; text-align: center;">
+                        [land_dev_calculator]
+                    </div>
+                    <hr style="border:0; border-top:1px solid var(--tls-border); margin:15px 0;">
+                    <div class="preview-list">
+                        <span><strong>Template:</strong> Land Development Calculator</span>
+                        <span><strong>Slug:</strong> <code>calculator</code></span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <?php
@@ -3909,7 +3970,6 @@ function tls_pricing_management_page() {
                 $row++;
                 if ($row === 1) continue; // Skip header row
 
-                // Validate data
                 if (count($data) < 5) {
                     $errors[] = "Row $row: Not enough columns";
                     continue;
@@ -3929,12 +3989,12 @@ function tls_pricing_management_page() {
             }
             fclose($handle);
 
-            echo '<div class="notice notice-success"><p>CSV Import Complete! Imported ' . $imported . ' items.</p></div>';
+            echo '<div class="notice notice-success is-dismissible" style="border-radius:8px;"><p><strong>CSV Import Complete!</strong> Imported ' . $imported . ' items.</p></div>';
             if (!empty($errors)) {
-                echo '<div class="notice notice-warning"><p>Errors: ' . implode('<br>', $errors) . '</p></div>';
+                echo '<div class="notice notice-warning is-dismissible" style="border-radius:8px;"><p><strong>Errors:</strong><br>' . implode('<br>', $errors) . '</p></div>';
             }
         } else {
-            echo '<div class="notice notice-error"><p>File upload error!</p></div>';
+            echo '<div class="notice notice-error is-dismissible" style="border-radius:8px;"><p><strong>File upload error!</strong> Please ensure you selected a valid CSV file.</p></div>';
         }
     }
 
@@ -3951,7 +4011,7 @@ function tls_pricing_management_page() {
                 'is_active' => isset($_POST['is_active']) ? 1 : 0,
                 'sort_order' => intval($_POST['sort_order'])
             ]);
-            echo '<div class="notice notice-success"><p>Item added successfully!</p></div>';
+            echo '<div class="notice notice-success is-dismissible" style="border-radius:8px;"><p><strong>Success:</strong> Item added successfully!</p></div>';
         } elseif ($_POST['action'] === 'edit' && wp_verify_nonce($_POST['pricing_nonce'], 'pricing_action')) {
             $wpdb->update($pricing_table, [
                 'category' => sanitize_text_field($_POST['category']),
@@ -3963,10 +4023,10 @@ function tls_pricing_management_page() {
                 'is_active' => isset($_POST['is_active']) ? 1 : 0,
                 'sort_order' => intval($_POST['sort_order'])
             ], ['id' => intval($_POST['item_id'])]);
-            echo '<div class="notice notice-success"><p>Item updated successfully!</p></div>';
+            echo '<div class="notice notice-success is-dismissible" style="border-radius:8px;"><p><strong>Success:</strong> Item updated successfully!</p></div>';
         } elseif ($_POST['action'] === 'delete' && wp_verify_nonce($_POST['pricing_nonce'], 'pricing_action')) {
             $wpdb->delete($pricing_table, ['id' => intval($_POST['item_id'])]);
-            echo '<div class="notice notice-success"><p>Item deleted successfully!</p></div>';
+            echo '<div class="notice notice-success is-dismissible" style="border-radius:8px;"><p><strong>Success:</strong> Item deleted successfully!</p></div>';
         }
     }
 
@@ -3980,22 +4040,167 @@ function tls_pricing_management_page() {
         $edit_item = $wpdb->get_row($wpdb->prepare("SELECT * FROM $pricing_table WHERE id = %d", intval($_GET['edit'])));
     }
     ?>
-    <div class="wrap">
-        <h1><i class="material-icons">construction</i> Construction Pricing Management</h1>
-        <p>Manage pricing for the Land Development Calculator. These prices will be used when users calculate construction costs.</p>
+    <div class="wrap tls-admin-modern">
+        <div class="tls-admin-header">
+            <h1><span class="dashicons dashicons-hammer"></span> Construction Pricing Management</h1>
+            <p>Manage units and rates used for construction cost calculations in the Land Development Calculator.</p>
+        </div>
 
         <!-- CSV IMPORT SECTION -->
-        <div style="background: #fff; padding: 20px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #28a745;">
-            <h3>📥 Bulk Import via CSV</h3>
+        <div class="tls-card" style="border-left: 4px solid var(--tls-success);">
+            <div class="card-header">
+                <span class="dashicons dashicons-upload" style="color: var(--tls-success);"></span>
+                <h2>Bulk Import via CSV</h2>
+            </div>
             <form method="post" enctype="multipart/form-data" style="display: flex; align-items: center; gap: 15px;">
                 <?php wp_nonce_field('pricing_action', 'pricing_nonce'); ?>
-                <input type="file" name="csv_file" accept=".csv" required>
-                <button type="submit" name="import_csv" class="button button-primary">Import CSV</button>
-                <a href="#" onclick="downloadCSVTemplate(); return false;" class="button">Download Template</a>
+                <input type="file" name="csv_file" accept=".csv" required class="tls-input" style="padding: 5px;">
+                <button type="submit" name="import_csv" class="btn btn-primary">Import CSV</button>
+                <a href="#" onclick="downloadCSVTemplate(); return false;" class="btn btn-secondary">Download Template</a>
             </form>
-            <p style="margin-top: 10px; color: #666; font-size: 13px;">
-                <strong>CSV Format:</strong> category, category_icon, category_description, name, unit, unit_price, is_active, sort_order
+            <p class="description" style="margin-top: 15px;">
+                <strong>CSV Format:</strong> <code>category, icon, description, name, unit, price, active, sort</code>
             </p>
+        </div>
+
+        <div class="tls-grid-layout">
+            <!-- ADD/EDIT FORM -->
+            <div class="tls-grid-col" style="flex: 0 0 400px;">
+                <div class="tls-card">
+                    <div class="card-header">
+                        <span class="dashicons dashicons-edit"></span>
+                        <h2><?php echo $edit_item ? 'Edit Item' : 'Add New Item'; ?></h2>
+                    </div>
+                    <form method="post">
+                        <?php wp_nonce_field('pricing_action', 'pricing_nonce'); ?>
+                        <input type="hidden" name="action" value="<?php echo $edit_item ? 'edit' : 'add'; ?>">
+                        <?php if ($edit_item): ?>
+                        <input type="hidden" name="item_id" value="<?php echo $edit_item->id; ?>">
+                        <?php endif; ?>
+
+                        <div class="tls-form-row">
+                            <label>Category</label>
+                            <input type="text" name="category" class="tls-input" value="<?php echo esc_attr($edit_item->category ?? ''); ?>" required list="category_list">
+                            <datalist id="category_list">
+                                <?php foreach ($categories as $cat): ?>
+                                <option value="<?php echo esc_attr($cat); ?>">
+                                <?php endforeach; ?>
+                            </datalist>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div class="tls-form-row">
+                                <label>Icon (Emoji/HTML)</label>
+                                <input type="text" name="category_icon" class="tls-input" value="<?php echo esc_attr($edit_item->category_icon ?? '📦'); ?>">
+                            </div>
+                            <div class="tls-form-row">
+                                <label>Sort Order</label>
+                                <input type="number" name="sort_order" class="tls-input" value="<?php echo esc_attr($edit_item->sort_order ?? 0); ?>">
+                            </div>
+                        </div>
+
+                        <div class="tls-form-row">
+                            <label>Category Description</label>
+                            <textarea name="category_description" class="tls-input" rows="2"><?php echo esc_textarea($edit_item->category_description ?? ''); ?></textarea>
+                        </div>
+
+                        <div class="tls-form-row">
+                            <label>Item Name</label>
+                            <input type="text" name="name" class="tls-input" value="<?php echo esc_attr($edit_item->name ?? ''); ?>" required>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div class="tls-form-row">
+                                <label>Unit</label>
+                                <input type="text" name="unit" class="tls-input" value="<?php echo esc_attr($edit_item->unit ?? 'sqft'); ?>" required>
+                            </div>
+                            <div class="tls-form-row">
+                                <label>Price (RM)</label>
+                                <input type="number" step="0.01" name="unit_price" class="tls-input" value="<?php echo esc_attr($edit_item->unit_price ?? ''); ?>" required>
+                            </div>
+                        </div>
+
+                        <div class="tls-form-row" style="padding-top: 10px;">
+                            <label style="font-weight: normal; cursor: pointer;">
+                                <input type="checkbox" name="is_active" value="1" <?php checked($edit_item->is_active ?? 1, 1); ?>> 
+                                Item is Active (Visible in calculator)
+                            </label>
+                        </div>
+
+                        <div style="margin-top: 25px; display: flex; gap: 10px;">
+                            <button type="submit" class="btn btn-primary" style="flex: 2;">
+                                <?php echo $edit_item ? 'Update Item' : 'Add Item'; ?>
+                            </button>
+                            <?php if ($edit_item): ?>
+                                <a href="<?php echo admin_url('admin.php?page=tls-pricing-management'); ?>" class="btn btn-secondary" style="flex: 1; text-align: center; text-decoration: none;">Cancel</a>
+                            <?php endif; ?>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ITEMS LIST -->
+            <div class="tls-grid-col main-col">
+                <div class="tls-card">
+                    <div class="card-header">
+                        <span class="dashicons dashicons-list-view"></span>
+                        <h2>Pricing Items (<?php echo count($items); ?>)</h2>
+                    </div>
+                    <table class="tls-table">
+                        <thead>
+                            <tr>
+                                <th>Item / Category</th>
+                                <th>Unit</th>
+                                <th>Price</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            $current_category = '';
+                            foreach ($items as $item):
+                                if ($current_category !== $item->category) {
+                                    $current_category = $item->category;
+                                    echo '<tr class="table-group-header" style="background: var(--tls-bg-soft); font-weight: 700;"><td colspan="5">' . esc_html($item->category_icon . ' ' . $item->category) . '</td></tr>';
+                                }
+                            ?>
+                            <tr>
+                                <td>
+                                    <strong><?php echo esc_html($item->name); ?></strong>
+                                    <div style="font-size:11px; color:var(--tls-text-muted);"><?php echo esc_html($item->category); ?></div>
+                                </td>
+                                <td><span class="badge badge-info"><?php echo esc_html($item->unit); ?></span></td>
+                                <td><strong>RM <?php echo number_format($item->unit_price, 2); ?></strong></td>
+                                <td>
+                                    <span class="badge <?php echo $item->is_active ? 'badge-success' : 'badge-danger'; ?>">
+                                        <?php echo $item->is_active ? 'Active' : 'Inactive'; ?>
+                                    </span>
+                                </td>
+                                <td style="text-align: right;">
+                                    <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                                        <a href="<?php echo admin_url('admin.php?page=tls-pricing-management&edit=' . $item->id); ?>" class="btn btn-secondary btn-sm" title="Edit">
+                                            <span class="dashicons dashicons-edit"></span>
+                                        </a>
+                                        <form method="post" style="display: inline;" onsubmit="return confirm('Delete this item?');">
+                                            <?php wp_nonce_field('pricing_action', 'pricing_nonce'); ?>
+                                            <input type="hidden" name="action" value="delete">
+                                            <input type="hidden" name="item_id" value="<?php echo $item->id; ?>">
+                                            <button type="submit" class="btn btn-danger btn-sm" title="Delete">
+                                                <span class="dashicons dashicons-trash"></span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                            <?php if (empty($items)): ?>
+                            <tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--tls-text-muted);">No pricing items defined yet.</td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
         <script>
@@ -4003,128 +4208,18 @@ function tls_pricing_management_page() {
             const csvContent = "category,category_icon,category_description,name,unit,unit_price,is_active,sort_order\n" +
                               "Pagar & Gerbang,🚧,Kerja pagar dan gerbang,Pagar Besi 6 Kaki,meter,120.00,1,0\n" +
                               "Pagar & Gerbang,🚧,Kerja pagar dan gerbang,Gerbang Besi 2 Panel,unit,1500.00,1,1\n" +
-                              "Penyediaan Tapak,<i class="material-icons">construction</i>,Kerja penyediaan tanah,Pembersihan Tanah,sqft,2.50,1,0\n" +
-                              "Binaan Rumah,<i class="material-icons">construction</i>,Kerja pembinaan rumah,Asas Concrete,sqft,15.00,1,0";
+                              "Penyediaan Tapak,🏗️,Kerja penyediaan tanah,Pembersihan Tanah,sqft,2.50,1,0\n" +
+                              "Binaan Rumah,🏠,Kerja pembinaan rumah,Asas Concrete,sqft,15.00,1,0";
 
             const blob = new Blob([csvContent], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'pricing_template.csv';
+            a.download = 'tls_pricing_template.csv';
             a.click();
             window.URL.revokeObjectURL(url);
         }
         </script>
-
-        <div style="display: grid; grid-template-columns: 400px 1fr; gap: 30px; margin-top: 30px;">
-            <!-- ADD/EDIT FORM -->
-            <div style="background: #fff; padding: 25px; border-radius: 8px; height: fit-content;">
-                <h2><?php echo $edit_item ? 'Edit Item' : 'Add New Item'; ?></h2>
-                <form method="post">
-                    <?php wp_nonce_field('pricing_action', 'pricing_nonce'); ?>
-                    <input type="hidden" name="action" value="<?php echo $edit_item ? 'edit' : 'add'; ?>">
-                    <?php if ($edit_item): ?>
-                    <input type="hidden" name="item_id" value="<?php echo $edit_item->id; ?>">
-                    <?php endif; ?>
-
-                    <table class="form-table">
-                        <tr>
-                            <th>Category</th>
-                            <td>
-                                <input type="text" name="category" class="regular-text" value="<?php echo esc_attr($edit_item->category ?? ''); ?>" required list="category_list">
-                                <datalist id="category_list">
-                                    <?php foreach ($categories as $cat): ?>
-                                    <option value="<?php echo esc_attr($cat); ?>">
-                                    <?php endforeach; ?>
-                                </datalist>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Category Icon</th>
-                            <td><input type="text" name="category_icon" class="regular-text" value="<?php echo esc_attr($edit_item->category_icon ?? '📦'); ?>"></td>
-                        </tr>
-                        <tr>
-                            <th>Category Description</th>
-                            <td><textarea name="category_description" class="large-text" rows="2"><?php echo esc_textarea($edit_item->category_description ?? ''); ?></textarea></td>
-                        </tr>
-                        <tr>
-                            <th>Item Name</th>
-                            <td><input type="text" name="name" class="regular-text" value="<?php echo esc_attr($edit_item->name ?? ''); ?>" required></td>
-                        </tr>
-                        <tr>
-                            <th>Unit</th>
-                            <td>
-                                <input type="text" name="unit" class="regular-text" value="<?php echo esc_attr($edit_item->unit ?? 'sqft'); ?>" required>
-                                <p class="description">Examples: sqft, meter, unit, lot</p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Unit Price (RM)</th>
-                            <td><input type="number" step="0.01" name="unit_price" class="regular-text" value="<?php echo esc_attr($edit_item->unit_price ?? ''); ?>" required></td>
-                        </tr>
-                        <tr>
-                            <th>Sort Order</th>
-                            <td><input type="number" name="sort_order" class="small-text" value="<?php echo esc_attr($edit_item->sort_order ?? 0); ?>"></td>
-                        </tr>
-                        <tr>
-                            <th>Active</th>
-                            <td><label><input type="checkbox" name="is_active" value="1" <?php checked($edit_item->is_active ?? 1, 1); ?>> Show in calculator</label></td>
-                        </tr>
-                    </table>
-
-                    <p class="submit">
-                        <input type="submit" class="button button-primary" value="<?php echo $edit_item ? 'Update Item' : 'Add Item'; ?>">
-                        <?php if ($edit_item): ?>
-                            <a href="<?php echo admin_url('admin.php?page=tls-pricing-management'); ?>" class="button">Cancel</a>
-                        <?php endif; ?>
-                    </p>
-                </form>
-            </div>
-
-            <!-- ITEMS LIST -->
-            <div style="background: #fff; padding: 25px; border-radius: 8px;">
-                <h2>Pricing Items (<?php echo count($items); ?>)</h2>
-                <table class="wp-list-table widefat fixed striped">
-                    <thead>
-                        <tr>
-                            <th>Category</th>
-                            <th>Item Name</th>
-                            <th>Unit</th>
-                            <th>Price (RM)</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        $current_category = '';
-                        foreach ($items as $item):
-                            if ($current_category !== $item->category) {
-                                $current_category = $item->category;
-                                echo '<tr style="background: #f8f9fa; font-weight: bold;"><td colspan="6">' . esc_html($item->category_icon . ' ' . $item->category) . '</td></tr>';
-                            }
-                        ?>
-                        <tr>
-                            <td><?php echo esc_html($item->category); ?></td>
-                            <td><?php echo esc_html($item->name); ?></td>
-                            <td><?php echo esc_html($item->unit); ?></td>
-                            <td><?php echo number_format($item->unit_price, 2); ?></td>
-                            <td><?php echo $item->is_active ? '<span style="color: green;">●</span> Active' : '<span style="color: red;">●</span> Inactive'; ?></td>
-                            <td>
-                                <a href="<?php echo admin_url('admin.php?page=tls-pricing-management&edit=' . $item->id); ?>" class="button button-small">Edit</a>
-                                <form method="post" style="display: inline;" onsubmit="return confirm('Delete this item?');">
-                                    <?php wp_nonce_field('pricing_action', 'pricing_nonce'); ?>
-                                    <input type="hidden" name="action" value="delete">
-                                    <input type="hidden" name="item_id" value="<?php echo $item->id; ?>">
-                                    <button type="submit" class="button button-small" style="color: red;">Delete</button>
-                                </form>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
     </div>
     <?php
 }
@@ -4152,7 +4247,7 @@ function tls_purchase_calculator_settings_page() {
         update_option('tls_mot_fees_rate', floatval($_POST['mot_rate']));
         update_option('tls_mot_fees_minimum', floatval($_POST['mot_minimum']));
 
-        $message = '<div class="notice notice-success is-dismissible"><p>Settings saved successfully!</p></div>';
+        $message = '<div class="notice notice-success is-dismissible" style="border-radius:8px;"><p><strong>Success:</strong> Purchase calculator rates saved successfully!</p></div>';
     }
 
     // Get current settings (with defaults)
@@ -4169,138 +4264,115 @@ function tls_purchase_calculator_settings_page() {
     $mot_minimum = get_option('tls_mot_fees_minimum', 500); // RM500
     ?>
 
-    <div class="wrap">
-        <h1><span class="dashicons dashicons-calculator"></span> Purchase Calculator Settings (Kos Pembelian)</h1>
-        <p>Adjust the fees and rates used in the Purchase Cost Calculator (MOT, Stamp Duty, Legal Fees).</p>
+    <div class="wrap tls-admin-modern">
+        <div class="tls-admin-header">
+            <h1><span class="dashicons dashicons-calculator"></span> Purchase Calculator Settings</h1>
+            <p>Configure the fees and rates used in the Purchase Cost Calculator (MOT, Stamp Duty, Legal Fees).</p>
+        </div>
 
         <?php echo $message; ?>
 
-        <form method="post" style="max-width: 900px;">
+        <form method="post">
             <?php wp_nonce_field('purchase_calc_action', 'purchase_calc_nonce'); ?>
 
-            <!-- Stamp Duty Section -->
-            <div style="background: white; padding: 20px; margin: 20px 0; border: 1px solid #ccc; border-radius: 8px;">
-                <h2 style="margin-top: 0; color: #2c5f2d;"><span class="dashicons dashicons-media-document"></span> Stamp Duty Rates</h2>
-                <p style="color: #666; font-size: 13px;">Malaysia tiered stamp duty calculation. Enter rates as percentages (e.g., 1 = 1%).</p>
+            <div class="tls-grid-layout">
+                <div class="tls-grid-col main-col">
+                    <!-- Stamp Duty Section -->
+                    <div class="tls-card">
+                        <div class="card-header">
+                            <span class="dashicons dashicons-media-document"></span>
+                            <h2>Stamp Duty Rates (%)</h2>
+                        </div>
+                        <p class="description" style="margin-bottom: 20px;">Malaysia tiered stamp duty calculation. Enter rates as percentages (e.g., 1.0 = 1%).</p>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="tls-form-row">
+                                <label>Tier 1 (First RM100,000)</label>
+                                <input type="number" step="0.01" name="stamp_tier1_rate" value="<?php echo esc_attr($stamp_tier1); ?>" class="tls-input">
+                            </div>
+                            <div class="tls-form-row">
+                                <label>Tier 2 (Up to RM500,000)</label>
+                                <input type="number" step="0.01" name="stamp_tier2_rate" value="<?php echo esc_attr($stamp_tier2); ?>" class="tls-input">
+                            </div>
+                            <div class="tls-form-row">
+                                <label>Tier 3 (Up to RM1,000,000)</label>
+                                <input type="number" step="0.01" name="stamp_tier3_rate" value="<?php echo esc_attr($stamp_tier3); ?>" class="tls-input">
+                            </div>
+                            <div class="tls-form-row">
+                                <label>Tier 4 (Above RM1,000,000)</label>
+                                <input type="number" step="0.01" name="stamp_tier4_rate" value="<?php echo esc_attr($stamp_tier4); ?>" class="tls-input">
+                            </div>
+                        </div>
+                    </div>
 
-                <table class="form-table">
-                    <tr>
-                        <th>
-                            <label>Tier 1: First RM100,000</label>
-                            <p class="description">Rate for property value up to RM100,000</p>
-                        </th>
-                        <td>
-                            <input type="number" step="0.01" name="stamp_tier1_rate" value="<?php echo esc_attr($stamp_tier1); ?>" style="width: 100px;"> %
-                            <span class="description" style="margin-left: 10px; color: #2c5f2d;">Default: 1%</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>
-                            <label>Tier 2: RM100,001 - RM500,000</label>
-                            <p class="description">Rate for value above RM100k up to RM500k</p>
-                        </th>
-                        <td>
-                            <input type="number" step="0.01" name="stamp_tier2_rate" value="<?php echo esc_attr($stamp_tier2); ?>" style="width: 100px;"> %
-                            <span class="description" style="margin-left: 10px; color: #2c5f2d;">Default: 2%</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>
-                            <label>Tier 3: RM500,001 - RM1,000,000</label>
-                            <p class="description">Rate for value above RM500k up to RM1M</p>
-                        </th>
-                        <td>
-                            <input type="number" step="0.01" name="stamp_tier3_rate" value="<?php echo esc_attr($stamp_tier3); ?>" style="width: 100px;"> %
-                            <span class="description" style="margin-left: 10px; color: #2c5f2d;">Default: 3%</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>
-                            <label>Tier 4: Above RM1,000,000</label>
-                            <p class="description">Rate for value above RM1M</p>
-                        </th>
-                        <td>
-                            <input type="number" step="0.01" name="stamp_tier4_rate" value="<?php echo esc_attr($stamp_tier4); ?>" style="width: 100px;"> %
-                            <span class="description" style="margin-left: 10px; color: #2c5f2d;">Default: 4%</span>
-                        </td>
-                    </tr>
-                </table>
+                    <!-- Legal Fees Section -->
+                    <div class="tls-card">
+                        <div class="card-header">
+                            <span class="dashicons dashicons-businessman"></span>
+                            <h2>Legal Fees Rates (%)</h2>
+                        </div>
+                        <p class="description" style="margin-bottom: 20px;">Standard legal fees for property purchase documents. Enter rates as percentages.</p>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                            <div class="tls-form-row">
+                                <label>Tier 1 (Up to RM150k)</label>
+                                <input type="number" step="0.01" name="legal_tier1_rate" value="<?php echo esc_attr($legal_tier1); ?>" class="tls-input">
+                            </div>
+                            <div class="tls-form-row">
+                                <label>Tier 2 (Up to RM1M)</label>
+                                <input type="number" step="0.01" name="legal_tier2_rate" value="<?php echo esc_attr($legal_tier2); ?>" class="tls-input">
+                            </div>
+                            <div class="tls-form-row">
+                                <label>Tier 3 (Above RM1M)</label>
+                                <input type="number" step="0.01" name="legal_tier3_rate" value="<?php echo esc_attr($legal_tier3); ?>" class="tls-input">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MOT & Other Fees Section -->
+                    <div class="tls-card">
+                        <div class="card-header">
+                            <span class="dashicons dashicons-clipboard"></span>
+                            <h2>MOT & Other Fees</h2>
+                        </div>
+                        <p class="description" style="margin-bottom: 20px;">Memorandum of Transfer and miscellaneous administrative costs.</p>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="tls-form-row">
+                                <label>MOT Fee Rate (%)</label>
+                                <input type="number" step="0.01" name="mot_rate" value="<?php echo esc_attr($mot_rate); ?>" class="tls-input">
+                            </div>
+                            <div class="tls-form-row">
+                                <label>MOT Minimum Fee (RM)</label>
+                                <input type="number" step="1" name="mot_minimum" value="<?php echo esc_attr($mot_minimum); ?>" class="tls-input">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <button type="submit" name="save_purchase_calculator" class="btn btn-primary btn-lg">
+                            <span class="dashicons dashicons-saved"></span>
+                            Save Calculator Rates
+                        </button>
+                    </div>
+                </div>
+
+                <div class="tls-grid-col side-col">
+                    <div class="tls-card">
+                        <div class="card-header">
+                            <span class="dashicons dashicons-info" style="color: var(--tls-primary);"></span>
+                            <h2>Calculation Logic</h2>
+                        </div>
+                        <p style="font-size: 13px; line-height: 1.6; color: var(--tls-text-muted);">
+                            The calculator uses these rates to provide users with an estimated total cost of acquisition. 
+                        </p>
+                        <hr style="border:0; border-top:1px solid var(--tls-border); margin: 15px 0;">
+                        <p style="font-size: 12px; color: var(--tls-text-muted);">
+                            <strong>Tip:</strong> These rates should follow current Malaysian Bar and LHDN standards to ensure accurate estimates for your clients.
+                        </p>
+                    </div>
+                </div>
             </div>
-
-            <!-- Legal Fees Section -->
-            <div style="background: white; padding: 20px; margin: 20px 0; border: 1px solid #ccc; border-radius: 8px;">
-                <h2 style="margin-top: 0; color: #2c5f2d;"><span class="dashicons dashicons-businessman"></span> Legal Fees Rates</h2>
-                <p style="color: #666; font-size: 13px;">Lawyer fees for property purchase. Enter rates as percentages.</p>
-
-                <table class="form-table">
-                    <tr>
-                        <th>
-                            <label>Tier 1: Up to RM150,000</label>
-                            <p class="description">Rate for property value up to RM150k</p>
-                        </th>
-                        <td>
-                            <input type="number" step="0.01" name="legal_tier1_rate" value="<?php echo esc_attr($legal_tier1); ?>" style="width: 100px;"> %
-                            <span class="description" style="margin-left: 10px; color: #2c5f2d;">Default: 1%</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>
-                            <label>Tier 2: RM150,001 - RM1,000,000</label>
-                            <p class="description">Rate for value above RM150k up to RM1M</p>
-                        </th>
-                        <td>
-                            <input type="number" step="0.01" name="legal_tier2_rate" value="<?php echo esc_attr($legal_tier2); ?>" style="width: 100px;"> %
-                            <span class="description" style="margin-left: 10px; color: #2c5f2d;">Default: 0.7%</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>
-                            <label>Tier 3: Above RM1,000,000</label>
-                            <p class="description">Rate for value above RM1M</p>
-                        </th>
-                        <td>
-                            <input type="number" step="0.01" name="legal_tier3_rate" value="<?php echo esc_attr($legal_tier3); ?>" style="width: 100px;"> %
-                            <span class="description" style="margin-left: 10px; color: #2c5f2d;">Default: 0.6%</span>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-
-            <!-- MOT & Other Fees Section -->
-            <div style="background: white; padding: 20px; margin: 20px 0; border: 1px solid #ccc; border-radius: 8px;">
-                <h2 style="margin-top: 0; color: #2c5f2d;"><span class="dashicons dashicons-clipboard"></span> MOT & Other Fees</h2>
-                <p style="color: #666; font-size: 13px;">Memorandum of Transfer and miscellaneous costs.</p>
-
-                <table class="form-table">
-                    <tr>
-                        <th>
-                            <label>MOT Fee Rate</label>
-                            <p class="description">Percentage of property value</p>
-                        </th>
-                        <td>
-                            <input type="number" step="0.01" name="mot_rate" value="<?php echo esc_attr($mot_rate); ?>" style="width: 100px;"> %
-                            <span class="description" style="margin-left: 10px; color: #2c5f2d;">Default: 0.5%</span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>
-                            <label>MOT Minimum Fee</label>
-                            <p class="description">Minimum charge regardless of property value</p>
-                        </th>
-                        <td>
-                            RM <input type="number" step="1" name="mot_minimum" value="<?php echo esc_attr($mot_minimum); ?>" style="width: 100px;">
-                            <span class="description" style="margin-left: 10px; color: #2c5f2d;">Default: RM500</span>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-
-            <!-- Save Button -->
-            <p class="submit">
-                <button type="submit" name="save_purchase_calculator" class="button button-primary button-large">
-                    💾 Save Calculator Settings
-                </button>
-            </p>
         </form>
     </div>
     <?php
@@ -4318,7 +4390,7 @@ function tls_construction_templates_page() {
     $message = '';
     $editing_template = null;
 
-    // Handle template actions (create, edit, delete)
+    // Handle template actions
     if (isset($_POST['action']) && wp_verify_nonce($_POST['template_nonce'], 'template_action')) {
         if ($_POST['action'] === 'save_template') {
             $template_data = [
@@ -4330,14 +4402,14 @@ function tls_construction_templates_page() {
 
             if (!empty($_POST['template_id'])) {
                 $wpdb->update($templates_table, $template_data, ['id' => intval($_POST['template_id'])]);
-                $message = '<div class="notice notice-success"><p>Template updated successfully!</p></div>';
+                $message = '<div class="notice notice-success is-dismissible" style="border-radius:8px;"><p><strong>Success:</strong> Template updated successfully!</p></div>';
             } else {
                 $wpdb->insert($templates_table, $template_data);
-                $message = '<div class="notice notice-success"><p>Template created successfully!</p></div>';
+                $message = '<div class="notice notice-success is-dismissible" style="border-radius:8px;"><p><strong>Success:</strong> Template created successfully!</p></div>';
             }
         } elseif ($_POST['action'] === 'delete_template') {
             $wpdb->delete($templates_table, ['id' => intval($_POST['template_id'])]);
-            $message = '<div class="notice notice-success"><p>Template deleted successfully!</p></div>';
+            $message = '<div class="notice notice-success is-dismissible" style="border-radius:8px;"><p><strong>Success:</strong> Template deleted successfully!</p></div>';
         } elseif ($_POST['action'] === 'add_item') {
             $wpdb->insert($template_items_table, [
                 'template_id' => intval($_POST['template_id']),
@@ -4345,36 +4417,36 @@ function tls_construction_templates_page() {
                 'default_quantity' => floatval($_POST['default_quantity']),
                 'notes' => sanitize_textarea_field($_POST['item_notes']),
             ]);
-            $message = '<div class="notice notice-success"><p>Item added to template!</p></div>';
+            $message = '<div class="notice notice-success is-dismissible" style="border-radius:8px;"><p><strong>Success:</strong> Item added to template!</p></div>';
         } elseif ($_POST['action'] === 'delete_item') {
             $wpdb->delete($template_items_table, ['id' => intval($_POST['item_id'])]);
-            $message = '<div class="notice notice-success"><p>Item removed from template!</p></div>';
+            $message = '<div class="notice notice-success is-dismissible" style="border-radius:8px;"><p><strong>Success:</strong> Item removed from template!</p></div>';
         }
     }
 
-    // Check if editing
     if (isset($_GET['edit'])) {
         $editing_template = $wpdb->get_row($wpdb->prepare("SELECT * FROM $templates_table WHERE id = %d", intval($_GET['edit'])));
     }
 
-    // Get all templates
     $templates = $wpdb->get_results("SELECT * FROM $templates_table ORDER BY created_at DESC");
-
-    // Get all pricing items for the dropdown
     $pricing_items = $wpdb->get_results("SELECT * FROM $pricing_table WHERE is_active = 1 ORDER BY category, name");
     ?>
-    <div class="wrap">
-        <h1><i class="material-icons">construction</i> Construction Templates</h1>
-        <p>Create preset construction packages like "Basic House", "Luxury Villa", etc. Users can select these templates to auto-populate the calculator.</p>
+    <div class="wrap tls-admin-modern">
+        <div class="tls-admin-header">
+            <h1><span class="dashicons dashicons-layout"></span> Construction Templates</h1>
+            <p>Define preset packages that users can select to quickly fill the calculator with standard item sets.</p>
+        </div>
 
         <?php echo $message; ?>
 
-        <div style="display: grid; grid-template-columns: 400px 1fr; gap: 30px; margin-top: 30px;">
-
+        <div class="tls-grid-layout">
             <!-- Left: Template Form -->
-            <div>
-                <div style="background: white; padding: 20px; border: 1px solid #ccc; border-radius: 8px;">
-                    <h2><?php echo $editing_template ? 'Edit Template' : 'Create New Template'; ?></h2>
+            <div class="tls-grid-col" style="flex: 0 0 420px;">
+                <div class="tls-card">
+                    <div class="card-header">
+                        <span class="dashicons dashicons-edit"></span>
+                        <h2><?php echo $editing_template ? 'Edit Template' : 'Create New Template'; ?></h2>
+                    </div>
                     <form method="post">
                         <?php wp_nonce_field('template_action', 'template_nonce'); ?>
                         <input type="hidden" name="action" value="save_template">
@@ -4382,101 +4454,101 @@ function tls_construction_templates_page() {
                             <input type="hidden" name="template_id" value="<?php echo $editing_template->id; ?>">
                         <?php endif; ?>
 
-                        <table class="form-table">
-                            <tr>
-                                <th><label>Template Name</label></th>
-                                <td><input type="text" name="template_name" class="regular-text" value="<?php echo $editing_template ? esc_attr($editing_template->name) : ''; ?>" required placeholder="e.g., Basic House"></td>
-                            </tr>
-                            <tr>
-                                <th><label>Description</label></th>
-                                <td><textarea name="template_description" class="large-text" rows="3" placeholder="Brief description of this package"><?php echo $editing_template ? esc_textarea($editing_template->description) : ''; ?></textarea></td>
-                            </tr>
-                            <tr>
-                                <th><label>Icon</label></th>
-                                <td>
-                                    <input type="text" name="template_icon" value="<?php echo $editing_template ? esc_attr($editing_template->icon) : '<i class="material-icons">construction</i>'; ?>" style="width: 60px; text-align: center; font-size: 20px;" required>
-                                    <p class="description">Use emoji like <i class="material-icons">construction</i> <i class="material-icons">calculate</i> ◉ <i class="material-icons">construction</i> ●</p>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th><label>Status</label></th>
-                                <td>
-                                    <label>
-                                        <input type="checkbox" name="is_active" value="1" <?php echo (!$editing_template || $editing_template->is_active) ? 'checked' : ''; ?>>
-                                        Active (visible to users)
-                                    </label>
-                                </td>
-                            </tr>
-                        </table>
+                        <div class="tls-form-row">
+                            <label>Template Name</label>
+                            <input type="text" name="template_name" class="tls-input" value="<?php echo $editing_template ? esc_attr($editing_template->name) : ''; ?>" required placeholder="e.g., Basic House">
+                        </div>
 
-                        <p class="submit">
-                            <button type="submit" class="button button-primary"><?php echo $editing_template ? 'Update Template' : 'Create Template'; ?></button>
+                        <div class="tls-form-row">
+                            <label>Description</label>
+                            <textarea name="template_description" class="tls-input" rows="3" placeholder="Brief description of this package"><?php echo $editing_template ? esc_textarea($editing_template->description) : ''; ?></textarea>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div class="tls-form-row">
+                                <label>Icon (Emoji/HTML)</label>
+                                <input type="text" name="template_icon" class="tls-input" value="<?php echo $editing_template ? esc_attr($editing_template->icon) : '🏠'; ?>" required>
+                            </div>
+                            <div class="tls-form-row" style="padding-top: 30px;">
+                                <label style="font-weight: normal; cursor: pointer;">
+                                    <input type="checkbox" name="is_active" value="1" <?php echo (!$editing_template || $editing_template->is_active) ? 'checked' : ''; ?>> 
+                                    Visible to Users
+                                </label>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 25px; display: flex; gap: 10px;">
+                            <button type="submit" class="btn btn-primary" style="flex:1;"><?php echo $editing_template ? 'Update' : 'Create'; ?></button>
                             <?php if ($editing_template): ?>
-                                <a href="<?php echo admin_url('admin.php?page=tls-construction-templates'); ?>" class="button">Cancel</a>
+                                <a href="<?php echo admin_url('admin.php?page=tls-construction-templates'); ?>" class="btn btn-secondary" style="flex:1; text-align:center; text-decoration:none;">Cancel</a>
                             <?php endif; ?>
-                        </p>
+                        </div>
                     </form>
                 </div>
 
                 <?php if ($editing_template): ?>
-                <!-- Add Items to Template -->
-                <div style="background: white; padding: 20px; border: 1px solid #ccc; border-radius: 8px; margin-top: 20px;">
-                    <h3>Add Items to "<?php echo esc_html($editing_template->name); ?>"</h3>
+                <div class="tls-card" style="margin-top: 25px; border-top: 4px solid var(--tls-primary);">
+                    <div class="card-header">
+                        <span class="dashicons dashicons-plus-alt"></span>
+                        <h2>Add Item to Template</h2>
+                    </div>
                     <form method="post">
                         <?php wp_nonce_field('template_action', 'template_nonce'); ?>
                         <input type="hidden" name="action" value="add_item">
                         <input type="hidden" name="template_id" value="<?php echo $editing_template->id; ?>">
 
-                        <table class="form-table">
-                            <tr>
-                                <th><label>Select Item</label></th>
-                                <td>
-                                    <select name="pricing_id" class="regular-text" required>
-                                        <option value="">-- Select Item --</option>
-                                        <?php
-                                        $current_category = '';
-                                        foreach ($pricing_items as $item):
-                                            if ($current_category !== $item->category) {
-                                                if ($current_category !== '') echo '</optgroup>';
-                                                $current_category = $item->category;
-                                                echo '<optgroup label="' . esc_attr($item->category_icon . ' ' . $item->category) . '">';
-                                            }
-                                            echo '<option value="' . $item->id . '">' . esc_html($item->name) . ' (RM' . number_format($item->unit_price, 2) . '/' . $item->unit . ')</option>';
-                                        endforeach;
+                        <div class="tls-form-row">
+                            <label>Select Pricing Item</label>
+                            <select name="pricing_id" class="tls-input" required>
+                                <option value="">-- Choose Item --</option>
+                                <?php
+                                $current_category = '';
+                                foreach ($pricing_items as $item):
+                                    if ($current_category !== $item->category) {
                                         if ($current_category !== '') echo '</optgroup>';
-                                        ?>
-                                    </select>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th><label>Default Quantity</label></th>
-                                <td><input type="number" name="default_quantity" step="0.01" min="0.01" value="1.00" required style="width: 100px;"></td>
-                            </tr>
-                            <tr>
-                                <th><label>Notes</label></th>
-                                <td><textarea name="item_notes" class="regular-text" rows="2" placeholder="Optional notes about this item"></textarea></td>
-                            </tr>
-                        </table>
+                                        $current_category = $item->category;
+                                        echo '<optgroup label="' . esc_attr($item->category_icon . ' ' . $item->category) . '">';
+                                    }
+                                    echo '<option value="' . $item->id . '">' . esc_html($item->name) . ' (RM' . number_format($item->unit_price, 2) . ')</option>';
+                                endforeach;
+                                if ($current_category !== '') echo '</optgroup>';
+                                ?>
+                            </select>
+                        </div>
 
-                        <p class="submit">
-                            <button type="submit" class="button button-secondary">Add Item to Template</button>
-                        </p>
+                        <div class="tls-form-row">
+                            <label>Default Quantity</label>
+                            <input type="number" name="default_quantity" step="0.01" min="0.01" value="1.00" required class="tls-input">
+                        </div>
+
+                        <div class="tls-form-row">
+                            <label>Notes (Internal)</label>
+                            <textarea name="item_notes" class="tls-input" rows="2"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-secondary" style="width:100%; margin-top:10px;">Add Item</button>
                     </form>
                 </div>
                 <?php endif; ?>
             </div>
 
             <!-- Right: Templates List -->
-            <div>
-                <div style="background: white; padding: 20px; border: 1px solid #ccc; border-radius: 8px;">
-                    <h2>All Templates (<?php echo count($templates); ?>)</h2>
+            <div class="tls-grid-col main-col">
+                <div class="tls-card">
+                    <div class="card-header">
+                        <span class="dashicons dashicons-list-view"></span>
+                        <h2>Available Templates (<?php echo count($templates); ?>)</h2>
+                    </div>
+                    
                     <?php if (empty($templates)): ?>
-                        <p style="color: #666; font-style: italic;">No templates created yet. Create your first template!</p>
+                        <div style="text-align: center; padding: 60px; color: var(--tls-text-muted);">
+                            <span class="dashicons dashicons-info" style="font-size: 40px; width: 40px; height: 40px; display: block; margin: 0 auto 15px;"></span>
+                            No templates created yet.
+                        </div>
                     <?php else: ?>
+                        <div style="display: flex; flex-direction: column; gap: 20px;">
                         <?php foreach ($templates as $template): ?>
                             <?php
-                            // Get items count for this template
-                            $items_count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM $template_items_table WHERE template_id = %d", $template->id));
                             $template_items = $wpdb->get_results($wpdb->prepare("
                                 SELECT ti.*, p.name, p.unit, p.unit_price, p.category
                                 FROM $template_items_table ti
@@ -4485,41 +4557,41 @@ function tls_construction_templates_page() {
                                 ORDER BY p.category, p.name
                             ", $template->id));
                             ?>
-                            <div style="border: 2px solid <?php echo $template->is_active ? '#2c5f2d' : '#ccc'; ?>; border-radius: 8px; padding: 15px; margin-bottom: 15px; background: <?php echo $template->is_active ? '#f0f8f0' : '#f9f9f9'; ?>;">
-                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                            <div style="border: 1px solid var(--tls-border); border-radius: 12px; overflow: hidden; background: white;">
+                                <div style="padding: 20px; background: <?php echo $template->is_active ? 'rgba(22, 163, 74, 0.05)' : 'rgba(100, 116, 139, 0.05)'; ?>; display: flex; justify-content: space-between; align-items: start; border-bottom: 1px solid var(--tls-border);">
                                     <div>
-                                        <h3 style="margin: 0; font-size: 18px;">
-                                            <?php echo esc_html($template->icon . ' ' . $template->name); ?>
-                                            <?php if (!$template->is_active): ?>
-                                                <span style="color: #999; font-size: 12px; font-weight: normal;">(Inactive)</span>
-                                            <?php endif; ?>
-                                        </h3>
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <span style="font-size: 24px;"><?php echo esc_html($template->icon); ?></span>
+                                            <h3 style="margin: 0; font-size: 18px; color: var(--tls-text-main);"><?php echo esc_html($template->name); ?></h3>
+                                            <span class="badge <?php echo $template->is_active ? 'badge-success' : 'badge-danger'; ?>" style="font-size: 10px;">
+                                                <?php echo $template->is_active ? 'Active' : 'Inactive'; ?>
+                                            </span>
+                                        </div>
                                         <?php if ($template->description): ?>
-                                            <p style="margin: 5px 0 0; color: #666; font-size: 13px;"><?php echo esc_html($template->description); ?></p>
+                                            <p style="margin: 8px 0 0; color: var(--tls-text-muted); font-size: 13px;"><?php echo esc_html($template->description); ?></p>
                                         <?php endif; ?>
                                     </div>
                                     <div style="display: flex; gap: 8px;">
-                                        <a href="<?php echo admin_url('admin.php?page=tls-construction-templates&edit=' . $template->id); ?>" class="button button-small">Edit</a>
+                                        <a href="<?php echo admin_url('admin.php?page=tls-construction-templates&edit=' . $template->id); ?>" class="btn btn-secondary btn-sm" title="Edit Template">Edit</a>
                                         <form method="post" style="display: inline;" onsubmit="return confirm('Delete this template and all its items?');">
                                             <?php wp_nonce_field('template_action', 'template_nonce'); ?>
                                             <input type="hidden" name="action" value="delete_template">
                                             <input type="hidden" name="template_id" value="<?php echo $template->id; ?>">
-                                            <button type="submit" class="button button-small" style="color: red;">Delete</button>
+                                            <button type="submit" class="btn btn-danger btn-sm" title="Delete Template">Delete</button>
                                         </form>
                                     </div>
                                 </div>
 
-                                <div style="background: white; padding: 10px; border-radius: 5px; margin-top: 10px;">
-                                    <strong style="font-size: 12px; color: #666;">📦 Items in this template: <?php echo $items_count; ?></strong>
+                                <div style="padding: 15px;">
                                     <?php if (!empty($template_items)): ?>
-                                        <table style="width: 100%; margin-top: 8px; font-size: 12px; border-collapse: collapse;">
+                                        <table class="tls-table" style="margin: 0; font-size: 13px;">
                                             <thead>
-                                                <tr style="background: #f5f5f5;">
-                                                    <th style="text-align: left; padding: 5px; border: 1px solid #ddd;">Item</th>
-                                                    <th style="text-align: center; padding: 5px; border: 1px solid #ddd;">Qty</th>
-                                                    <th style="text-align: right; padding: 5px; border: 1px solid #ddd;">Unit Price</th>
-                                                    <th style="text-align: right; padding: 5px; border: 1px solid #ddd;">Subtotal</th>
-                                                    <th style="text-align: center; padding: 5px; border: 1px solid #ddd;"></th>
+                                                <tr>
+                                                    <th>Item Name</th>
+                                                    <th style="text-align: center;">Qty</th>
+                                                    <th style="text-align: right;">Unit Price</th>
+                                                    <th style="text-align: right;">Subtotal</th>
+                                                    <th style="text-align: center; width: 40px;"></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -4530,33 +4602,39 @@ function tls_construction_templates_page() {
                                                     $total_cost += $subtotal;
                                                 ?>
                                                 <tr>
-                                                    <td style="padding: 5px; border: 1px solid #ddd;"><?php echo esc_html($item->name); ?></td>
-                                                    <td style="text-align: center; padding: 5px; border: 1px solid #ddd;"><?php echo number_format($item->default_quantity, 2); ?> <?php echo esc_html($item->unit); ?></td>
-                                                    <td style="text-align: right; padding: 5px; border: 1px solid #ddd;">RM<?php echo number_format($item->unit_price, 2); ?></td>
-                                                    <td style="text-align: right; padding: 5px; border: 1px solid #ddd; font-weight: bold;">RM<?php echo number_format($subtotal, 2); ?></td>
-                                                    <td style="text-align: center; padding: 5px; border: 1px solid #ddd;">
+                                                    <td>
+                                                        <strong><?php echo esc_html($item->name); ?></strong>
+                                                        <div style="font-size: 10px; color: var(--tls-text-muted);"><?php echo esc_html($item->category); ?></div>
+                                                    </td>
+                                                    <td style="text-align: center;"><?php echo number_format($item->default_quantity, 2); ?> <small><?php echo esc_html($item->unit); ?></small></td>
+                                                    <td style="text-align: right;">RM <?php echo number_format($item->unit_price, 2); ?></td>
+                                                    <td style="text-align: right;"><strong>RM <?php echo number_format($subtotal, 2); ?></strong></td>
+                                                    <td style="text-align: center;">
                                                         <form method="post" style="display: inline;" onsubmit="return confirm('Remove this item?');">
                                                             <?php wp_nonce_field('template_action', 'template_nonce'); ?>
                                                             <input type="hidden" name="action" value="delete_item">
                                                             <input type="hidden" name="item_id" value="<?php echo $item->id; ?>">
-                                                            <button type="submit" class="button button-small" style="color: red; padding: 2px 6px; font-size: 11px;">×</button>
+                                                            <button type="submit" style="background:none; border:none; color:var(--tls-danger); cursor:pointer; padding:0;"><span class="dashicons dashicons-no-alt"></span></button>
                                                         </form>
                                                     </td>
                                                 </tr>
                                                 <?php endforeach; ?>
-                                                <tr style="background: #e8f5e9; font-weight: bold;">
-                                                    <td colspan="3" style="text-align: right; padding: 8px; border: 1px solid #ddd;">Total Estimated Cost:</td>
-                                                    <td style="text-align: right; padding: 8px; border: 1px solid #ddd; color: #2c5f2d; font-size: 14px;">RM<?php echo number_format($total_cost, 2); ?></td>
-                                                    <td style="border: 1px solid #ddd;"></td>
-                                                </tr>
                                             </tbody>
+                                            <tfoot>
+                                                <tr style="background: var(--tls-bg-soft);">
+                                                    <td colspan="3" style="text-align: right;"><strong>Total Estimated Package Cost:</strong></td>
+                                                    <td style="text-align: right;"><strong style="color: var(--tls-success); font-size: 15px;">RM <?php echo number_format($total_cost, 2); ?></strong></td>
+                                                    <td></td>
+                                                </tr>
+                                            </tfoot>
                                         </table>
                                     <?php else: ?>
-                                        <p style="margin: 5px 0 0; color: #999; font-style: italic; font-size: 12px;">No items added yet. Click "Edit" to add items.</p>
+                                        <p style="text-align: center; padding: 20px; color: var(--tls-text-muted); font-style: italic; margin: 0;">No items added to this package yet.</p>
                                     <?php endif; ?>
                                 </div>
                             </div>
                         <?php endforeach; ?>
+                        </div>
                     <?php endif; ?>
                 </div>
             </div>

@@ -4,7 +4,7 @@
             <?php if (has_post_thumbnail()): ?>
                 <img src="<?php the_post_thumbnail_url('medium_large'); ?>" alt="<?php the_title_attribute(); ?>">
             <?php else: ?>
-                <img src="https://picsum.photos/seed/<?php the_ID(); ?>/600/400" alt="Sabah Land News">
+                <img src="<?php echo get_template_directory_uri(); ?>/assets/images/placeholder.jpeg" alt="Sabah Land News">
             <?php endif; ?>
             <span class="blog-year-overlay"><?php echo get_the_date('Y'); ?></span>
         </div>

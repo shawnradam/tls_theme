@@ -38,14 +38,23 @@ function tls_enqueue_frontend_scripts() {
             'generating_pdf' => 'Generating your PDF report...',
         ]
     ]);
+
+    // Theme Frontend Interactive Scripts (Externalized from PHP templates)
+    wp_enqueue_script('tls-theme-frontend', get_template_directory_uri() . '/assets/js/theme-frontend.js', ['jquery'], TLS_VERSION, true);
+    wp_localize_script('tls-theme-frontend', 'ldcAjax', [
+        'ajaxurl' => admin_url('admin-ajax.php'),
+        'nonce'   => wp_create_nonce('tls_nonce')
+    ]);
 }
 
 // ============================================
 // ADMIN SCRIPTS & STYLES
 // ============================================
-
 add_action('admin_enqueue_scripts', 'tls_enqueue_admin_scripts');
 function tls_enqueue_admin_scripts($hook) {
+    // Master Admin Modern UI Stack
+    wp_enqueue_style('tls-admin-modern', get_template_directory_uri() . '/assets/css/tls-admin-modern.css', [], TLS_VERSION);
+
     // Splash Page
     if ($hook === 'appearance_page_tls-splash') {
         wp_enqueue_media();

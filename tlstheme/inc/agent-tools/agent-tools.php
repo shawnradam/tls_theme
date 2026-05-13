@@ -100,6 +100,9 @@ class TLS_Agent_Tools {
         $wa = get_theme_mod('whatsapp_number', '601126661706');
         $phone = get_theme_mod('phone_number', $wa);
         
+        $wa_enc = base64_encode($wa);
+        $phone_enc = base64_encode($phone);
+
         $title = get_the_title();
         $permalink = get_permalink();
         $msg = urlencode("Hi, saya berminat dengan property: $title - $permalink");
@@ -117,10 +120,10 @@ class TLS_Agent_Tools {
                 </div>
             </div>
             <div class="agent-actions">
-                <a href="https://wa.me/<?php echo esc_attr($wa); ?>?text=<?php echo $msg; ?>" class="action-btn wa" title="WhatsApp">
+                <a href="javascript:void(0)" onclick="tlsRevealContact(this, 'wa', '<?php echo $wa_enc; ?>')" class="action-btn wa" title="WhatsApp">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
                 </a>
-                <a href="tel:+<?php echo esc_attr($phone); ?>" class="action-btn call" title="Call">
+                <a href="javascript:void(0)" onclick="tlsRevealContact(this, 'tel', '<?php echo $phone_enc; ?>')" class="action-btn call" title="Call">
                     <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
                 </a>
                 <button type="button" class="action-btn msg" id="tls-open-contact" title="Message">
@@ -195,75 +198,115 @@ class TLS_Agent_Tools {
             ];
             
             update_option($this->option_name, $settings);
-            echo '<div class="updated"><p>Settings saved successfully!</p></div>';
+            echo '<div class="notice notice-success is-dismissible" style="margin:20px 0; border-radius:8px;"><p><strong>Success:</strong> Agent Bar settings saved!</p></div>';
         }
         
         $settings = $this->get_settings();
         ?>
-        <div class="wrap">
+        <div class="wrap tls-admin-modern">
             <div class="tls-admin-header">
-                <h1>Mobile Agent Bar Settings</h1>
-                <p class="description">Note: Global WhatsApp and Phone numbers are managed in <a href="<?php echo admin_url('admin.php?page=tls-settings'); ?>">Contact Settings</a>.</p>
+                <h1><span class="dashicons dashicons-smartphone"></span> Mobile Agent Bar</h1>
+                <p>Configure the sticky contact bar and view counter for mobile property pages.</p>
             </div>
-            
-            <div class="tls-admin-card" style="background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 10px rgba(0,0,0,0.05); max-width:800px; margin-top:20px;">
-                <form method="post" action="">
-                    <?php wp_nonce_field('tls_agent_bar_action', 'tls_agent_bar_nonce'); ?>
-                    <table class="form-table">
-                        <tr>
-                            <th scope="row">Enable Sticky Bar</th>
-                            <td>
-                                <label class="switch">
-                                    <input type="checkbox" name="enabled" <?php checked($settings['enabled'], 1); ?>>
-                                    <span class="slider round"></span>
+
+            <div class="tls-grid-layout">
+                <div class="tls-grid-col main-col">
+                    <form method="post" action="">
+                        <?php wp_nonce_field('tls_agent_bar_action', 'tls_agent_bar_nonce'); ?>
+                        
+                        <div class="tls-card">
+                            <div class="card-header">
+                                <span class="dashicons dashicons-admin-generic"></span>
+                                <h2>General Configuration</h2>
+                            </div>
+                            
+                            <div class="status-grid" style="margin-bottom: 30px;">
+                                <div class="status-item <?php echo $settings['enabled'] ? 'active' : ''; ?>">
+                                    <div class="val"><?php echo $settings['enabled'] ? '✓' : '—'; ?></div>
+                                    <div class="lab">Sticky Bar Enabled</div>
+                                    <label style="display:block; margin-top:10px;"><input type="checkbox" name="enabled" value="1" <?php checked($settings['enabled'], 1); ?>> Enable</label>
+                                </div>
+                                <div class="status-item <?php echo $settings['show_views'] ? 'active' : ''; ?>">
+                                    <div class="val"><?php echo $settings['show_views'] ? '✓' : '—'; ?></div>
+                                    <div class="lab">View Counter</div>
+                                    <label style="display:block; margin-top:10px;"><input type="checkbox" name="show_views" value="1" <?php checked($settings['show_views'], 1); ?>> Enable</label>
+                                </div>
+                            </div>
+
+                            <div class="tls-form-row">
+                                <label>Agent Label Visibility</label>
+                                <label style="font-weight: normal;">
+                                    <input type="checkbox" name="show_agent_label" value="1" <?php checked($settings['show_agent_label'], 1); ?>> 
+                                    Display label above agent name (e.g., "Perunding Tanah")
                                 </label>
-                                <p class="description">Show the sticky bar on mobile property pages.</p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Enable View Counter</th>
-                            <td>
-                                <label class="switch">
-                                    <input type="checkbox" name="show_views" <?php checked($settings['show_views'], 1); ?>>
-                                    <span class="slider round"></span>
-                                </label>
-                                <p class="description">Show the human-readable view counter on property pages.</p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Bar Height (px)</th>
-                            <td><input type="number" name="bar_height" value="<?php echo esc_attr($settings['bar_height']); ?>" class="small-text"> px</td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Background Color</th>
-                            <td><input type="color" name="bg_color" value="<?php echo esc_attr($settings['bg_color']); ?>"></td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Text Color</th>
-                            <td><input type="color" name="text_color" value="<?php echo esc_attr($settings['text_color']); ?>"></td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Agent Label</th>
-                            <td>
-                                <input type="checkbox" name="show_agent_label" <?php checked($settings['show_agent_label'], 1); ?>> Show Label<br>
-                                <input type="text" name="agent_label_text" value="<?php echo esc_attr($settings['agent_label_text']); ?>" class="regular-text" style="margin-top:10px;" placeholder="cth: Perunding Tanah">
-                            </td>
-                        </tr>
-                    </table>
-                    <p class="submit">
-                        <input type="submit" name="tls_save_agent_bar" id="submit" class="button button-primary button-hero" value="Save Agent Bar Settings">
-                    </p>
-                </form>
+                            </div>
+
+                            <div class="tls-form-row">
+                                <label>Custom Label Text</label>
+                                <input type="text" name="agent_label_text" value="<?php echo esc_attr($settings['agent_label_text']); ?>" class="tls-input" placeholder="e.g., Property Consultant">
+                            </div>
+                        </div>
+
+                        <div class="tls-card">
+                            <div class="card-header">
+                                <span class="dashicons dashicons-art"></span>
+                                <h2>Visual Styling</h2>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                                <div class="tls-form-row">
+                                    <label>Bar Background</label>
+                                    <input type="color" name="bg_color" value="<?php echo esc_attr($settings['bg_color']); ?>" style="width: 100%; height: 40px; border-radius: 8px; border: 1px solid var(--tls-border); cursor: pointer;">
+                                </div>
+                                <div class="tls-form-row">
+                                    <label>Agent Name Color</label>
+                                    <input type="color" name="text_color" value="<?php echo esc_attr($settings['text_color']); ?>" style="width: 100%; height: 40px; border-radius: 8px; border: 1px solid var(--tls-border); cursor: pointer;">
+                                </div>
+                                <div class="tls-form-row">
+                                    <label>Bar Height (px)</label>
+                                    <input type="number" name="bar_height" value="<?php echo esc_attr($settings['bar_height']); ?>" class="tls-input">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 20px;">
+                            <button type="submit" name="tls_save_agent_bar" class="btn btn-primary">
+                                <span class="dashicons dashicons-saved"></span>
+                                Save Agent Bar Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="tls-grid-col side-col">
+                    <div class="tls-card">
+                        <div class="card-header">
+                            <span class="dashicons dashicons-info"></span>
+                            <h2>Management Tip</h2>
+                        </div>
+                        <p style="font-size: 13px; color: var(--tls-text-muted); line-height: 1.6;">
+                            The agent's photo and name are automatically pulled from the **Author Profile** of the property listing.
+                        </p>
+                        <hr style="border:0; border-top:1px solid #f1f5f9; margin:15px 0;">
+                        <p style="font-size: 12px; color: var(--tls-text-muted);">
+                            Need to change contact numbers? Visit the <a href="<?php echo admin_url('admin.php?page=tls-settings'); ?>">Global Contact Settings</a>.
+                        </p>
+                    </div>
+
+                    <div class="tls-card">
+                        <div class="card-header">
+                            <span class="dashicons dashicons-visibility"></span>
+                            <h2>Live Status</h2>
+                        </div>
+                        <div class="preview-list">
+                            <span>Status: <?php echo $settings['enabled'] ? 'Active' : 'Disabled'; ?></span>
+                            <span>Target: Mobile Devices</span>
+                            <span>Context: Tanah Post Type</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        <style>
-            .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
-            .switch input { opacity: 0; width: 0; height: 0; }
-            .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
-            .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-            input:checked + .slider { background-color: #2271b1; }
-            input:checked + .slider:before { transform: translateX(26px); }
-        </style>
         <?php
     }
 }

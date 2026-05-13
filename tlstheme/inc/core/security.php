@@ -25,6 +25,8 @@ function tls_maybe_hide_admin_bar($show) {
 // WP-LOGIN.PHP REDIRECT
 // ============================================
 
+// Disabled to allow standard login access as requested
+/*
 add_action('login_init', 'tls_block_wp_login');
 function tls_block_wp_login() {
     // Check if wp-login.php blocking is enabled
@@ -35,11 +37,14 @@ function tls_block_wp_login() {
         exit;
     }
 }
+*/
 
 // ============================================
 // ADMIN ACCESS RESTRICTION
 // ============================================
 
+// Disabled to allow admin dashboard access as requested
+/*
 add_action('admin_init', 'tls_restrict_admin_access');
 function tls_restrict_admin_access() {
     // Skip on AJAX requests
@@ -59,3 +64,4 @@ function tls_restrict_admin_access() {
         exit;
     }
 }
+*/

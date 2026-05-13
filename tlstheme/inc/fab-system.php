@@ -187,249 +187,202 @@ class TLS_FAB_System {
     public function render_admin_page() {
         $settings = $this->get_settings();
         ?>
-        <div class="wrap tls-fab-settings">
-            <h1>🎯 FAB Menu Settings</h1>
-            <p class="description">Manage your Floating Action Button and sticky footer settings. Choose from 4 different FAB types and customize appearance.</p>
+        <div class="wrap tls-admin-modern">
+            <div class="tls-admin-header">
+                <h1>🎯 Floating Menu (FAB) & Footer Settings</h1>
+                <p>Customize the behavior and appearance of your site's persistent engagement tools.</p>
+            </div>
 
             <form id="tls-fab-form" method="post">
                 <?php wp_nonce_field('tls_fab_nonce', 'tls_fab_nonce_field'); ?>
 
-                <!-- FAB Type Selection -->
-                <div class="tls-card" style="margin-top: 30px;">
-                    <h2>Choose FAB Type</h2>
-                    <p class="description">Select the layout style for your floating action button</p>
+                <div class="tls-grid-layout">
+                    <!-- Main Column: Settings -->
+                    <div class="tls-grid-col main-col">
+                        <!-- FAB Type Selection -->
+                        <div class="tls-card">
+                            <div class="card-header">
+                                <span class="dashicons dashicons-layout"></span>
+                                <h2>Interface Strategy</h2>
+                            </div>
+                            <p class="description" style="margin-bottom: 20px;">Select how users will interact with your engagement tools on mobile and desktop.</p>
 
-                    <div class="fab-types-grid">
-                        <!-- Type 1 -->
-                        <label class="fab-type-card <?php echo $settings['fab_type'] === 'type1' ? 'active' : ''; ?>">
-                            <input type="radio" name="fab_type" value="type1" <?php checked($settings['fab_type'], 'type1'); ?>>
-                            <div class="fab-type-preview">
-                                <div class="preview-screen">
-                                    <div class="preview-fab">+</div>
-                                    <div class="preview-menu">
-                                        <div class="preview-item">◈</div>
-                                        <div class="preview-item"><i class="material-icons">add</i></div>
-                                        <div class="preview-item">◉</div>
-                                        <div class="preview-item"><i class="material-icons">circle</i></div>
+                            <div class="fab-types-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+                                <!-- Type 1 -->
+                                <label class="fab-type-card <?php echo $settings['fab_type'] === 'type1' ? 'active' : ''; ?>">
+                                    <input type="radio" name="fab_type" value="type1" <?php checked($settings['fab_type'], 'type1'); ?>>
+                                    <div class="fab-type-preview">
+                                        <div class="preview-screen">
+                                            <div class="preview-fab">+</div>
+                                            <div class="preview-menu">
+                                                <div class="preview-item">◈</div>
+                                                <div class="preview-item">◈</div>
+                                            </div>
+                                        </div>
                                     </div>
+                                    <h3 style="font-size:14px;">Full FAB Menu</h3>
+                                    <p style="font-size:12px;">All tools inside a single expanding button.</p>
+                                </label>
+
+                                <!-- Type 2 -->
+                                <label class="fab-type-card <?php echo $settings['fab_type'] === 'type2' ? 'active' : ''; ?>">
+                                    <input type="radio" name="fab_type" value="type2" <?php checked($settings['fab_type'], 'type2'); ?>>
+                                    <div class="fab-type-preview">
+                                        <div class="preview-screen">
+                                            <div class="preview-fab">+</div>
+                                            <div class="preview-footer">
+                                                <div class="preview-footer-btn">◉</div>
+                                                <div class="preview-footer-btn">◉</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <h3 style="font-size:14px;">Hybrid Layout</h3>
+                                    <p style="font-size:12px;">FAB for tools + Sticky bar for contact. <span class="badge badge-success" style="font-size:9px;">BEST</span></p>
+                                </label>
+
+                                <!-- Type 4 -->
+                                <label class="fab-type-card <?php echo $settings['fab_type'] === 'type4' ? 'active' : ''; ?>">
+                                    <input type="radio" name="fab_type" value="type4" <?php checked($settings['fab_type'], 'type4'); ?>>
+                                    <div class="fab-type-preview">
+                                        <div class="preview-screen">
+                                            <div class="preview-footer">
+                                                <div class="preview-footer-btn">◈</div>
+                                                <div class="preview-footer-btn">◉</div>
+                                                <div class="preview-footer-btn">◉</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <h3 style="font-size:14px;">Sticky Bar Only</h3>
+                                    <p style="font-size:12px;">Traditional app-like bottom navigation bar.</p>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="tls-card">
+                            <div class="card-header">
+                                <span class="dashicons dashicons-admin-generic"></span>
+                                <h2>Configuration</h2>
+                            </div>
+                            
+                            <div class="tls-form-row" style="padding-bottom: 15px; border-bottom: 1px solid #f1f5f9; margin-bottom: 20px;">
+                                <label for="enabled" style="display:flex; align-items:center; gap:12px; cursor:pointer;">
+                                    <input type="checkbox" name="enabled" id="enabled" <?php checked($settings['enabled'], 1); ?> style="width:20px; height:20px;">
+                                    <strong>Enable engagement system site-wide</strong>
+                                </label>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                <div class="tls-form-row">
+                                    <label>Search Button</label>
+                                    <label class="tls-toggle">
+                                        <input type="checkbox" name="show_search" id="show_search" <?php checked($settings['show_search'], 1); ?>>
+                                        <span class="tls-toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="tls-form-row">
+                                    <label>Calculator Button</label>
+                                    <label class="tls-toggle">
+                                        <input type="checkbox" name="show_calculator" id="show_calculator" <?php checked($settings['show_calculator'], 1); ?>>
+                                        <span class="tls-toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="tls-form-row">
+                                    <label>WhatsApp Link</label>
+                                    <label class="tls-toggle">
+                                        <input type="checkbox" name="show_whatsapp" id="show_whatsapp" <?php checked($settings['show_whatsapp'], 1); ?>>
+                                        <span class="tls-toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="tls-form-row">
+                                    <label>Direct Call Link</label>
+                                    <label class="tls-toggle">
+                                        <input type="checkbox" name="show_call" id="show_call" <?php checked($settings['show_call'], 1); ?>>
+                                        <span class="tls-toggle-slider"></span>
+                                    </label>
                                 </div>
                             </div>
-                            <h3>Type 1: Full FAB</h3>
-                            <p>All buttons in FAB menu. Clean and organized.</p>
-                            <ul>
-                                <li><i class="material-icons">check</i> All 4 buttons in FAB</li>
-                                <li><i class="material-icons">check</i> No sticky footer</li>
-                                <li><i class="material-icons">check</i> Desktop + Mobile</li>
-                            </ul>
-                        </label>
+                        </div>
 
-                        <!-- Type 2 -->
-                        <label class="fab-type-card <?php echo $settings['fab_type'] === 'type2' ? 'active' : ''; ?>">
-                            <input type="radio" name="fab_type" value="type2" <?php checked($settings['fab_type'], 'type2'); ?>>
-                            <div class="fab-type-preview">
-                                <div class="preview-screen">
-                                    <div class="preview-fab">+</div>
-                                    <div class="preview-menu">
-                                        <div class="preview-item">◈</div>
-                                        <div class="preview-item"><i class="material-icons">add</i></div>
-                                    </div>
-                                    <div class="preview-footer">
-                                        <div class="preview-footer-btn">◉</div>
-                                        <div class="preview-footer-btn"><i class="material-icons">circle</i></div>
-                                    </div>
+                        <div class="tls-card">
+                            <div class="card-header">
+                                <span class="dashicons dashicons-phone"></span>
+                                <h2>Contact Overrides</h2>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                <div class="tls-form-row">
+                                    <label for="whatsapp_number">WhatsApp (Override)</label>
+                                    <input type="text" name="whatsapp_number" id="whatsapp_number" class="tls-input" value="<?php echo esc_attr($settings['whatsapp_number']); ?>" placeholder="e.g. 60123456789">
+                                </div>
+                                <div class="tls-form-row">
+                                    <label for="phone_number">Phone (Override)</label>
+                                    <input type="text" name="phone_number" id="phone_number" class="tls-input" value="<?php echo esc_attr($settings['phone_number']); ?>" placeholder="e.g. 60123456789">
                                 </div>
                             </div>
-                            <h3>Type 2: FAB + Sticky Footer</h3>
-                            <p>Tools in FAB, Communication in footer. <span class="badge-recommended">RECOMMENDED</span></p>
-                            <ul>
-                                <li><i class="material-icons">check</i> Search + Calculator in FAB</li>
-                                <li><i class="material-icons">check</i> WhatsApp + Call in footer</li>
-                                <li><i class="material-icons">check</i> Mobile optimized</li>
-                            </ul>
-                        </label>
+                            <p class="description">Leave blank to use the global settings from TLS Dashboard > Contact Settings.</p>
+                        </div>
 
-                        <!-- Type 3 -->
-                        <label class="fab-type-card <?php echo $settings['fab_type'] === 'type3' ? 'active' : ''; ?>">
-                            <input type="radio" name="fab_type" value="type3" <?php checked($settings['fab_type'], 'type3'); ?>>
-                            <div class="fab-type-preview">
-                                <div class="preview-screen">
-                                    <div class="preview-fab">+</div>
-                                    <div class="preview-menu">
-                                        <div class="preview-item">◈</div>
-                                        <div class="preview-item"><i class="material-icons">add</i></div>
-                                    </div>
+                        <div style="margin-top: 30px; display: flex; gap: 15px;">
+                            <button type="submit" class="btn btn-primary" id="save-fab-settings">
+                                <span class="dashicons dashicons-saved"></span> Save All Settings
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="reset-fab-settings">
+                                <span class="dashicons dashicons-undo"></span> Reset to Factory Defaults
+                            </button>
+                            <span class="spinner" style="float: none; margin: 0 10px;"></span>
+                        </div>
+                    </div>
+
+                    <!-- Side Column: Status & Preview -->
+                    <div class="tls-grid-col side-col">
+                        <div class="tls-card">
+                            <div class="card-header">
+                                <span class="dashicons dashicons-visibility"></span>
+                                <h2>Appearance Preview</h2>
+                            </div>
+                            <div class="preview-section">
+                                <h4>Global Status</h4>
+                                <div class="preview-list">
+                                    <?php if ($settings['enabled']): ?>
+                                        <span class="badge badge-success">System Active</span>
+                                    <?php else: ?>
+                                        <span class="badge" style="background:#f1f5f9; color:#64748b;">Disabled</span>
+                                    <?php endif; ?>
                                 </div>
                             </div>
-                            <h3>Type 3: Minimal FAB</h3>
-                            <p>Only essential tools. Perfect for minimal design.</p>
-                            <ul>
-                                <li><i class="material-icons">check</i> Search + Calculator only</li>
-                                <li><i class="material-icons">check</i> No footer</li>
-                                <li><i class="material-icons">check</i> Ultra clean</li>
-                            </ul>
-                        </label>
-
-                        <!-- Type 4 -->
-                        <label class="fab-type-card <?php echo $settings['fab_type'] === 'type4' ? 'active' : ''; ?>">
-                            <input type="radio" name="fab_type" value="type4" <?php checked($settings['fab_type'], 'type4'); ?>>
-                            <div class="fab-type-preview">
-                                <div class="preview-screen">
-                                    <div class="preview-footer">
-                                        <div class="preview-footer-btn">◉</div>
-                                        <div class="preview-footer-btn"><i class="material-icons">circle</i></div>
-                                        <div class="preview-footer-btn">◈</div>
-                                        <div class="preview-footer-btn"><i class="material-icons">add</i></div>
+                            <hr style="border:0; border-top: 1px solid #f1f5f9; margin: 20px 0;">
+                            <div class="preview-section">
+                                <h4>Visual Brand</h4>
+                                <div class="tls-form-row">
+                                    <label>Action Color</label>
+                                    <div style="display:flex; gap:10px;">
+                                        <input type="color" name="button_color" id="button_color" value="<?php echo esc_attr($settings['button_color']); ?>" style="height:40px; width:60px; border-radius:8px; border:1px solid #ddd; padding:2px;">
+                                        <input type="text" class="tls-input" value="<?php echo esc_attr($settings['button_color']); ?>" style="flex:1;" readonly>
                                     </div>
                                 </div>
+                                <div class="tls-form-row">
+                                    <label>Corner Anchor</label>
+                                    <select name="button_position" id="button_position" class="tls-input">
+                                        <option value="bottom-right" <?php selected($settings['button_position'], 'bottom-right'); ?>>Bottom Right</option>
+                                        <option value="bottom-left" <?php selected($settings['button_position'], 'bottom-left'); ?>>Bottom Left</option>
+                                    </select>
+                                </div>
                             </div>
-                            <h3>Type 4: Sticky Footer Only</h3>
-                            <p>All buttons in footer bar. Traditional approach.</p>
-                            <ul>
-                                <li><i class="material-icons">check</i> All buttons in footer</li>
-                                <li><i class="material-icons">check</i> No FAB</li>
-                                <li><i class="material-icons">check</i> Simple and direct</li>
-                            </ul>
-                        </label>
+                        </div>
+
+                        <div class="tls-card">
+                            <div class="card-header">
+                                <span class="dashicons dashicons-editor-code"></span>
+                                <h2>Developer CSS</h2>
+                            </div>
+                            <textarea name="custom_css" id="custom_css" rows="6" class="tls-input" style="font-family:monospace; font-size:12px;" placeholder="/* Custom CSS here */"><?php echo esc_textarea($settings['custom_css']); ?></textarea>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Enable/Disable -->
-                <div class="tls-card">
-                    <h2>General Settings</h2>
-                    <table class="form-table">
-                        <tr>
-                            <th><label for="enabled">Enable FAB Menu</label></th>
-                            <td>
-                                <label class="tls-toggle">
-                                    <input type="checkbox" name="enabled" id="enabled" <?php checked($settings['enabled'], 1); ?>>
-                                    <span class="tls-toggle-slider"></span>
-                                </label>
-                                <p class="description">Turn on/off the entire FAB system</p>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-
-                <!-- Button Visibility -->
-                <div class="tls-card">
-                    <h2>Button Visibility</h2>
-                    <p class="description">Choose which buttons to show in FAB menu</p>
-                    <table class="form-table">
-                        <tr>
-                            <th><label for="show_search">◈ Search Button</label></th>
-                            <td>
-                                <label class="tls-toggle">
-                                    <input type="checkbox" name="show_search" id="show_search" <?php checked($settings['show_search'], 1); ?>>
-                                    <span class="tls-toggle-slider"></span>
-                                </label>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th><label for="show_calculator"><i class="material-icons">add</i> Calculator Button</label></th>
-                            <td>
-                                <label class="tls-toggle">
-                                    <input type="checkbox" name="show_calculator" id="show_calculator" <?php checked($settings['show_calculator'], 1); ?>>
-                                    <span class="tls-toggle-slider"></span>
-                                </label>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th><label for="show_whatsapp">◉ WhatsApp Button</label></th>
-                            <td>
-                                <label class="tls-toggle">
-                                    <input type="checkbox" name="show_whatsapp" id="show_whatsapp" <?php checked($settings['show_whatsapp'], 1); ?>>
-                                    <span class="tls-toggle-slider"></span>
-                                </label>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th><label for="show_call"><i class="material-icons">circle</i> Call Button</label></th>
-                            <td>
-                                <label class="tls-toggle">
-                                    <input type="checkbox" name="show_call" id="show_call" <?php checked($settings['show_call'], 1); ?>>
-                                    <span class="tls-toggle-slider"></span>
-                                </label>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-
-                <!-- Contact Information -->
-                <div class="tls-card">
-                    <h2>Contact Information</h2>
-                    <table class="form-table">
-                        <tr>
-                            <th><label for="whatsapp_number">WhatsApp Number</label></th>
-                            <td>
-                                <input type="text" name="whatsapp_number" id="whatsapp_number" class="regular-text" value="<?php echo esc_attr($settings['whatsapp_number'] ?: get_theme_mod('whatsapp_number', '')); ?>" placeholder="60123456789">
-                                <p class="description">Format: 60123456789 (without +)</p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th><label for="phone_number">Phone Number</label></th>
-                            <td>
-                                <input type="text" name="phone_number" id="phone_number" class="regular-text" value="<?php echo esc_attr($settings['phone_number'] ?: get_theme_mod('phone_number', '')); ?>" placeholder="60123456789">
-                                <p class="description">Format: 60123456789 (without +)</p>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-
-                <!-- Appearance -->
-                <div class="tls-card">
-                    <h2>Appearance</h2>
-                    <table class="form-table">
-                        <tr>
-                            <th><label for="button_color">Button Color</label></th>
-                            <td>
-                                <input type="color" name="button_color" id="button_color" value="<?php echo esc_attr($settings['button_color']); ?>">
-                                <input type="text" class="regular-text" value="<?php echo esc_attr($settings['button_color']); ?>" readonly>
-                                <p class="description">Main color for FAB button</p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th><label for="button_position">Button Position</label></th>
-                            <td>
-                                <select name="button_position" id="button_position">
-                                    <option value="bottom-right" <?php selected($settings['button_position'], 'bottom-right'); ?>>Bottom Right</option>
-                                    <option value="bottom-left" <?php selected($settings['button_position'], 'bottom-left'); ?>>Bottom Left</option>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th><label for="show_sticky_footer">Show Sticky Footer</label></th>
-                            <td>
-                                <label class="tls-toggle">
-                                    <input type="checkbox" name="show_sticky_footer" id="show_sticky_footer" <?php checked($settings['show_sticky_footer'], 1); ?>>
-                                    <span class="tls-toggle-slider"></span>
-                                </label>
-                                <p class="description">Show WhatsApp/Call buttons in sticky footer (Type 2 & 4)</p>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-
-                <!-- Custom CSS -->
-                <div class="tls-card">
-                    <h2>Custom CSS</h2>
-                    <p class="description">Add custom CSS to override FAB styles (advanced users only)</p>
-                    <textarea name="custom_css" id="custom_css" rows="8" class="large-text code"><?php echo esc_textarea($settings['custom_css']); ?></textarea>
-                </div>
-
-                <!-- Save Buttons -->
-                <p class="submit">
-                    <button type="submit" class="button button-primary button-large" id="save-fab-settings">
-                        💾 Save Settings
-                    </button>
-                    <button type="button" class="button button-secondary" id="reset-fab-settings">
-                        🔄 Reset to Defaults
-                    </button>
-                    <span class="spinner" style="float: none; margin: 0 10px;"></span>
-                </p>
-
-                <div id="fab-message"></div>
+                <div id="fab-message" style="margin-top: 20px;"></div>
             </form>
         </div>
+
 
         <style>
             .tls-fab-settings .tls-card {

@@ -8,7 +8,7 @@
             <?php if (has_post_thumbnail()): ?>
                 <?php the_post_thumbnail('large'); ?>
             <?php else: ?>
-                <img src="https://picsum.photos/seed/<?php the_ID(); ?>/1200/600" alt="<?php the_title_attribute(); ?>">
+                <img src="<?php echo get_template_directory_uri(); ?>/assets/images/placeholder.jpeg" alt="<?php the_title_attribute(); ?>">
             <?php endif; ?>
             <span class="single-post-year"><?php echo get_the_date('Y'); ?></span>
         </div>
@@ -71,7 +71,7 @@
                         <?php if (has_post_thumbnail()): ?>
                             <img src="<?php the_post_thumbnail_url('medium'); ?>" alt="<?php the_title_attribute(); ?>">
                         <?php else: ?>
-                            <img src="https://picsum.photos/seed/<?php the_ID(); ?>/400/250" alt="Article thumbnail">
+                            <img src="<?php echo get_template_directory_uri(); ?>/assets/images/placeholder.jpeg" alt="Article thumbnail">
                         <?php endif; ?>
                     </div>
                     <div class="related-post-info">

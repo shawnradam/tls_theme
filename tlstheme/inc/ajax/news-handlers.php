@@ -36,7 +36,7 @@ function tls_ajax_load_more_news() {
                         <?php if (has_post_thumbnail()): ?>
                             <img src="<?php the_post_thumbnail_url('medium_large'); ?>" alt="<?php the_title_attribute(); ?>">
                         <?php else: ?>
-                            <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=500&h=300&fit=crop" alt="Sabah Land News">
+                            <img src="<?php echo get_template_directory_uri(); ?>/assets/images/placeholder.jpeg" alt="Sabah Land News">
                         <?php endif; ?>
                         <span class="news-year"><?php echo esc_html($year); ?></span>
                     </div>

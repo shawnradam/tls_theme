@@ -122,7 +122,7 @@
                         <option value="100000" <?php selected(get_query_var('min_price'), '100000'); ?>>RM 100,000</option>
                         <option value="200000" <?php selected(get_query_var('min_price'), '200000'); ?>>RM 200,000</option>
                         <option value="300000" <?php selected(get_query_var('min_price'), '300000'); ?>>RM 300,000</option>
-                        <option value="500000" <?php selected(get_query_var('min_price'), '500000'); ?>>RM 500,000</option>
+                        <option value="500000" <?php selected(get_query_var('min_price'), '500000'); ?>>RM 50,0000</option>
                         <option value="1000000" <?php selected(get_query_var('min_price'), '1000000'); ?>>RM 1,000,000</option>
                     </select>
                 </div>
@@ -210,6 +210,7 @@
         <div class="contact-modal-body">
             <form id="contactForm" method="post">
                 <input type="hidden" name="action" value="tls_send_contact_email">
+                <input type="hidden" name="property_id" id="contact_property_id" value="">
                 <?php wp_nonce_field('tls_contact_nonce', 'nonce'); ?>
                 <div class="form-group">
                     <label for="contact_name">Nama Penuh</label>
@@ -252,7 +253,54 @@
     </div>
 </div>
 
-<!-- FAB Menu will be rendered by TLS_FAB_System via wp_footer hook -->
+<!-- App Announcement Modal -->
+<?php $app_settings = tls_get_app_settings(); ?>
+<div class="contact-modal" id="appModal">
+    <div class="contact-modal-overlay" id="appModalOverlay"></div>
+    <div class="contact-modal-content">
+        <div class="contact-modal-header">
+            <h2>Pengumuman Aplikasi</h2>
+            <button class="contact-modal-close" id="closeAppBtn">&times;</button>
+        </div>
+        <div class="contact-modal-body">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="width: 60px; height: 60px; background: #f0fdf4; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
+                    <span class="dashicons dashicons-smartphone" style="font-size: 30px; width: 30px; height: 30px; color: #16a34a;"></span>
+                </div>
+                <h3 style="color: #0F766E; margin-bottom: 10px;">Tanah Lot Sabah Mobile App</h3>
+                <p style="color: #475569; line-height: 1.6; font-size: 0.95rem;">
+                    <?php echo nl2br(esc_html($app_settings['announcement'])); ?>
+                </p>
+            </div>
+
+            <?php if ($app_settings['status'] === 'available'): ?>
+                <div style="text-align: center; padding-top: 10px; border-top: 1px solid #e5e7eb;">
+                    <p style="margin-bottom: 15px; font-weight: 600; color: #1e293b;">Tersedia di Google Play Store:</p>
+                    <a href="<?php echo esc_url($app_settings['playstore_url']); ?>" target="_blank" class="playstore-badge-link" style="margin-top: 0;">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play" style="height: 50px;">
+                    </a>
+                </div>
+            <?php else: ?>
+                <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                    <h4 style="margin-top: 0; color: #1e293b; font-size: 0.95rem; margin-bottom: 12px; text-align: center;">Daftar untuk Makluman Pelancaran</h4>
+                    <form id="appSubscribeForm">
+                        <div class="form-group">
+                            <label for="subscribe_email">Alamat Emel</label>
+                            <input type="email" name="email" id="subscribe_email" placeholder="nama@anda.com" required>
+                        </div>
+                        <button type="submit" class="btn-submit">
+                            <span class="btn-text">Langgan Makluman</span>
+                            <span class="btn-loading" style="display:none;">Menghantar...</span>
+                        </button>
+                    </form>
+                    <div id="subscribeSuccess" style="display:none; text-align: center; color: #16a34a; font-weight: 600; margin-top: 10px;">
+                        ✓ Berjaya dilanggan! Kami akan maklumkan anda nanti.
+                    </div>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
 
 <footer class="site-footer">
     <div class="container">
@@ -270,10 +318,10 @@
                     $wa_footer_enc = base64_encode($wa_footer);
                     $phone_footer_enc = base64_encode($phone_footer);
                     ?>
-                    <a href="https://wa.me/<?php echo esc_attr(preg_replace('/\D/', '', $wa_footer)); ?>" target="_blank" class="contact-circle wa-circle" title="WhatsApp">
-                        <span class="material-icons">chat</span>
+                    <a href="javascript:void(0)" onclick="tlsRevealContact(this, 'wa', '<?php echo $wa_footer_enc; ?>')" class="contact-circle wa-circle" title="WhatsApp">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                     </a>
-                    <a href="tel:+<?php echo esc_attr(preg_replace('/\D/', '', $phone_footer)); ?>" class="contact-circle phone-circle" title="Telefon">
+                    <a href="javascript:void(0)" onclick="tlsRevealContact(this, 'tel', '<?php echo $phone_footer_enc; ?>')" class="contact-circle phone-circle" title="Telefon">
                         <span class="material-icons">call</span>
                     </a>
                     <button type="button" class="contact-circle email-circle" id="openContactModal" title="Emel">
@@ -295,17 +343,11 @@
                 Ejen berlesen dan profesional<br>
                 Urusan sah dan selamat</p>
             </div>
-            <?php 
-            $app_settings = function_exists('tls_get_app_settings') ? tls_get_app_settings() : ['enabled' => 0, 'playstore_url' => ''];
-            if ($app_settings['enabled'] && !empty($app_settings['playstore_url'])): 
-            ?>
+            <?php if ($app_settings['enabled']): ?>
             <div class="footer-col footer-app-download">
                 <h4 class="footer-heading">Muat Turun App</h4>
-                <a href="<?php echo esc_url($app_settings['playstore_url']); ?>" target="_blank" class="playstore-btn">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 01-.61-.92V2.734a1 1 0 01.609-.92zm10.89 10.893L2.168 3.402l1.114 1.125 11.128 11.13 1.089-1.085-11.89-11.86zm3.496-3.464l1.27 1.296 1.122-1.103-1.27-1.296-1.122 1.103zM5.793 19.574l1.125-1.125 9.287-9.288 1.125 1.125-9.287 9.288-1.125-1.125zm11.855-2.215l1.122-1.125 2.303-2.303-1.125-1.125-2.303 2.303-1.117 1.12 1.12 1.125z"/>
-                    </svg>
-                    <span>Get it on<br><strong>Google Play</strong></span>
+                <a href="javascript:void(0)" id="openAppModal" class="playstore-badge-link">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play" class="playstore-badge-img">
                 </a>
             </div>
             <?php endif; ?>
@@ -319,70 +361,70 @@
 <?php wp_footer(); ?>
 
 <script>
+// Click to Reveal Logic (global, available immediately)
+window.tlsRevealContact = function(el, type, encoded) {
+    const num = atob(encoded);
+    let link = type === 'wa' ? 'https://wa.me/' + num : 'tel:+' + num;
+    if (type === 'wa_full') link = 'https://wa.me/' + num;
+    el.href = link;
+    window.location.href = link;
+    return false;
+};
+
 document.addEventListener('DOMContentLoaded', function() {
-    // 2. Modal Logic - Calculator & Search
-    var calcModal = document.getElementById('calcModal');
-    var calcModalOverlay = document.getElementById('calcModalOverlay');
-    var closeCalcBtn = document.getElementById('closeCalcBtn');
-    
-    if (closeCalcBtn && calcModal) {
-        closeCalcBtn.addEventListener('click', function() {
-            calcModal.classList.remove('active');
-        });
-    }
-    
-    if (calcModalOverlay && calcModal) {
-        calcModalOverlay.addEventListener('click', function() {
-            calcModal.classList.remove('active');
-        });
-    }
-    
-    var searchModal = document.getElementById('searchModal');
-    var searchModalOverlay = document.getElementById('searchModalOverlay');
-    var closeSearchBtn = document.getElementById('closeSearchBtn');
-    
-    if (closeSearchBtn && searchModal) {
-        closeSearchBtn.addEventListener('click', function() {
-            searchModal.classList.remove('active');
-        });
-    }
-    
-    if (searchModalOverlay && searchModal) {
-        searchModalOverlay.addEventListener('click', function() {
-            searchModal.classList.remove('active');
-        });
+    // 1. Modal Toggle Helper
+    function initModal(modalId, openBtnId, closeBtnId, overlayId) {
+        var modal = document.getElementById(modalId);
+        var openBtn = document.getElementById(openBtnId);
+        var closeBtn = document.getElementById(closeBtnId);
+        var overlay = document.getElementById(overlayId);
+
+        if (openBtn && modal) {
+            openBtn.addEventListener('click', function() { modal.classList.add('active'); });
+        }
+        if (closeBtn && modal) {
+            closeBtn.addEventListener('click', function() { modal.classList.remove('active'); });
+        }
+        if (overlay && modal) {
+            overlay.addEventListener('click', function() { modal.classList.remove('active'); });
+        }
     }
 
-    // 3. Contact Modal Logic
-    var contactModal = document.getElementById('contactModal');
-    var contactModalOverlay = document.getElementById('contactModalOverlay');
-    var closeContactBtn = document.getElementById('closeContactBtn');
-    var openContactBtn = document.getElementById('openContactModal');
+    initModal('calcModal', 'openCalcModal', 'closeCalcBtn', 'calcModalOverlay');
+    initModal('searchModal', 'openSearchModal', 'closeSearchBtn', 'searchModalOverlay');
+    initModal('contactModal', 'openContactModal', 'closeContactBtn', 'contactModalOverlay');
+    initModal('appModal', 'openAppModal', 'closeAppBtn', 'appModalOverlay');
+
+    // Check URL for property parameter and auto-open contact modal
+    var urlParams = new URLSearchParams(window.location.search);
+    var propertyId = urlParams.get('property');
+    var contactModalParam = urlParams.get('contact');
     
-    if (openContactBtn && contactModal) {
-        openContactBtn.addEventListener('click', function() {
+    if (propertyId || contactModalParam === 'modal') {
+        var contactModal = document.getElementById('contactModal');
+        var propertyInput = document.getElementById('contact_property_id');
+        var messageTextarea = document.getElementById('contact_message');
+        
+        if (contactModal) {
+            if (propertyId && propertyInput) {
+                propertyInput.value = propertyId;
+            }
+            if (propertyId && messageTextarea) {
+                messageTextarea.value = 'Saya berminat dengan hartanah (Property ID: ' + propertyId + '). Sila hubungi saya untuk maklumat lanjut.';
+            }
             contactModal.classList.add('active');
-        });
+            
+            // Remove query params from URL without reload
+            var newUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, newUrl);
+        }
     }
-    
-    if (closeContactBtn && contactModal) {
-        closeContactBtn.addEventListener('click', function() {
-            contactModal.classList.remove('active');
-        });
-    }
-    
-    if (contactModalOverlay && contactModal) {
-        contactModalOverlay.addEventListener('click', function() {
-            contactModal.classList.remove('active');
-        });
-    }
-    
-    // 4. Contact Form Submission (AJAX)
+
+    // 2. Contact Form Submission
     var contactForm = document.getElementById('contactForm');
     if (contactForm) {
         contactForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            var formData = new FormData(contactForm);
             var submitBtn = contactForm.querySelector('.btn-submit');
             var btnText = submitBtn.querySelector('.btn-text');
             var btnLoading = submitBtn.querySelector('.btn-loading');
@@ -393,69 +435,91 @@ document.addEventListener('DOMContentLoaded', function() {
             
             fetch(ldcAjax.ajaxurl, {
                 method: 'POST',
-                body: formData
+                body: new FormData(contactForm)
             })
-            .then(function(response) { return response.json(); })
-            .then(function(data) {
+            .then(res => res.json())
+            .then(data => {
                 if (data.success) {
                     contactForm.style.display = 'none';
                     document.getElementById('contactFormSuccess').style.display = 'block';
                 } else {
-                    alert(data.data || 'Ralat berlaku. Sila cuba lagi.');
+                    alert(data.data || 'Ralat berlaku.');
                     btnText.style.display = 'inline';
                     btnLoading.style.display = 'none';
                     submitBtn.disabled = false;
                 }
             })
-            .catch(function() {
-                alert('Ralat berlaku. Sila cuba lagi.');
-                btnText.style.display = 'inline';
-                btnLoading.style.display = 'none';
+            .catch(() => {
+                alert('Ralat berlaku.');
+                submitBtn.disabled = false;
+            });
+        });
+    }
+
+    // 3. App Subscription Form
+    var appForm = document.getElementById('appSubscribeForm');
+    if (appForm) {
+        appForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var submitBtn = appForm.querySelector('.btn-submit');
+            var btnText = submitBtn.querySelector('.btn-text');
+            var btnLoading = submitBtn.querySelector('.btn-loading');
+            
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'inline';
+            submitBtn.disabled = true;
+            
+            var formData = new FormData(appForm);
+            formData.append('action', 'tls_app_subscribe');
+
+            fetch(ldcAjax.ajaxurl, {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    appForm.style.display = 'none';
+                    document.getElementById('subscribeSuccess').style.display = 'block';
+                } else {
+                    alert(data.data);
+                    btnText.style.display = 'inline';
+                    btnLoading.style.display = 'none';
+                    submitBtn.disabled = false;
+                }
+            })
+            .catch(() => {
+                alert('Ralat berlaku.');
                 submitBtn.disabled = false;
             });
         });
     }
     
-    // 5. ESC key closes all modals
+    // 4. ESC key closes all modals
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            if (calcModal) calcModal.classList.remove('active');
-            if (searchModal) searchModal.classList.remove('active');
-            if (contactModal) contactModal.classList.remove('active');
+            document.querySelectorAll('.contact-modal, .calc-modal, .search-modal').forEach(m => m.classList.remove('active'));
         }
     });
 
-    // 6. Click to Reveal Logic for Phone/WA
-    window.tlsRevealContact = function(el, type, encoded) {
-        const num = atob(encoded);
-        let link = '';
-        
-        if (type === 'wa') {
-            link = 'https://wa.me/' + num;
-        } else if (type === 'wa_full') {
-            link = 'https://wa.me/' + num;
-        } else {
-            link = 'tel:+' + num;
-        }
-        
-        // Update the element
-        el.href = link;
-        el.setAttribute('data-revealed', 'true');
-        
-        // For buttons with spans/text, we could show the number, 
-        // but for sticky bars it's better to just trigger the action.
-        window.location.href = link;
-        return false;
-    };
-
-    // 2. Footer Fullscreen Logic - Works on all devices when body has enable-fullscreen-footer class
+    // 5. Sticky Footer & Bar Auto-Hide Logic
     var footer = document.querySelector('footer.site-footer');
-    if (footer && document.body.classList.contains('enable-fullscreen-footer')) {
+    var mobileBar = document.querySelector('.mobile-sticky-bar');
+    var fabContainer = document.querySelector('.tls-fab-container');
+    var fabStickyFooter = document.querySelector('.tls-sticky-footer');
+    
+    if (footer) {
         window.addEventListener('scroll', function() {
-            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 50) {
-                footer.classList.add('is-at-bottom');
+            var footerRect = footer.getBoundingClientRect();
+            // If the top of the footer is visible in the viewport
+            if (footerRect.top < window.innerHeight) {
+                if (mobileBar) mobileBar.classList.add('hidden');
+                if (fabContainer) fabContainer.classList.add('hidden');
+                if (fabStickyFooter) fabStickyFooter.classList.add('hidden');
             } else {
-                footer.classList.remove('is-at-bottom');
+                if (mobileBar) mobileBar.classList.remove('hidden');
+                if (fabContainer) fabContainer.classList.remove('hidden');
+                if (fabStickyFooter) fabStickyFooter.classList.remove('hidden');
             }
         });
     }

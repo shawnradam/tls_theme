@@ -22,6 +22,7 @@ function tls_handle_contact_email() {
     $phone = sanitize_text_field($_POST['phone'] ?? '');
     $subject = sanitize_text_field($_POST['subject'] ?? '');
     $message = sanitize_textarea_field($_POST['message'] ?? '');
+    $property_id = sanitize_text_field($_POST['property_id'] ?? '');
 
     if (empty($name) || empty($email) || empty($subject) || empty($message)) {
         wp_send_json_error('Sila isi semua ruangan yang diperlukan.');
@@ -38,6 +39,9 @@ function tls_handle_contact_email() {
     $email_body = "Nama: $name\n";
     $email_body .= "Emel: $email\n";
     $email_body .= "Telefon: " . ($phone ?: 'Tidak dinyatakan') . "\n";
+    if (!empty($property_id)) {
+        $email_body .= "Property ID: $property_id\n";
+    }
     $email_body .= "Subjek: $subject\n\n";
     $email_body .= "Mesej:\n$message\n";
     $email_body .= "\n---\nHantar dari: " . get_bloginfo('url') . "\n";
