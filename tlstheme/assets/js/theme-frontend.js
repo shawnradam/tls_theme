@@ -409,13 +409,27 @@
     // ============================================
     
     function initLandCards() {
-        // Use delegation so it works for cards loaded via AJAX or inside the Map Portal
+        // 1. Unbind previous clicks to prevent the "double fire" bug
+        $(document).off('click', '.framer-card-container');
+
+        // 2. Attach the clean click event
         $(document).on('click', '.framer-card-container', function(e) {
-            // Don't flip if clicking the "Lihat Details" button
-            if (e.target.classList.contains('back-cta')) return;
             
-            const inner = $(this).find('.framer-card-inner');
-            inner.toggleClass('flipped');
+            // 3. If the link is clicked, exit immediately and let the browser navigate
+            if ($(e.target).closest('a, button, .back-cta').length > 0) {
+                return; 
+            }
+            
+            const currentInner = $(this).find('.framer-card-inner');
+            const isAlreadyOpen = currentInner.hasClass('flipped');
+            
+            // 4. Close ALL cards safely
+            $('.framer-card-inner').removeClass('flipped');
+            
+            // 5. Open ONLY the one we clicked (if it wasn't already open)
+            if (!isAlreadyOpen) {
+                currentInner.addClass('flipped');
+            }
         });
     }
 

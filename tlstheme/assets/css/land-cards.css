@@ -32,12 +32,27 @@
     box-shadow: 0 15px 35px rgba(0,0,0,0.1);
 }
 
+.framer-card-front {
+    z-index: 2; /* Keep front on top initially */
+}
+
 .framer-card-back {
     transform: rotateY(180deg);
     padding: 25px;
     display: flex;
     flex-direction: column;
     background: #ffffff;
+    z-index: 1; /* Keep back underneath initially */
+}
+
+/* FIX: Disable the front face entirely when flipped so it doesn't block clicks */
+.framer-card-inner.flipped .framer-card-front {
+    pointer-events: none;
+    z-index: 1;
+}
+
+.framer-card-inner.flipped .framer-card-back {
+    z-index: 2;
 }
 
 /* Flip Icon */
@@ -214,23 +229,30 @@
     overflow: hidden;
 }
 
+/* FIX: Makes the link behave properly without Z-fighting and 3D plane issues */
 .back-cta {
+    display: block; 
+    position: relative; 
+    z-index: 999; /* Force it to the very top */
+    transform: translateZ(30px); /* PUSHES BUTTON OUT OF 3D PLANE SO IT CAN BE CLICKED */
+    box-sizing: border-box; 
     margin-top: 15px;
     width: 100%;
     padding: 12px;
     background: #000;
-    color: #fff;
+    color: rgba(255, 255, 255, 0.9) !important;
     text-align: center;
     border-radius: 12px;
     font-weight: 700;
     text-decoration: none;
     transition: all 0.3s ease;
     border: 2px solid #000;
+    cursor: pointer;
 }
 
 .back-cta:hover {
-    background: transparent;
-    color: #000;
+    background: #ffffff !important;
+    color: #000 !important;
 }
 
 /* Responsive Adjustments */

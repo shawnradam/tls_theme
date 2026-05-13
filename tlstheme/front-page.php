@@ -194,28 +194,7 @@ $final_poster = !empty($media_poster) ? $media_poster : $fallback_poster;
             
             if ($tanah_query->have_posts()) :
                 while ($tanah_query->have_posts()) : $tanah_query->the_post();
-                    $harga = get_post_meta(get_the_ID(), '_tanah_harga', true) ?: 0;
-                    $ekar = get_post_meta(get_the_ID(), '_tanah_keluasan', true) ?: 0;
-                    $geran = get_post_meta(get_the_ID(), '_tanah_jenis_geran', true) ?: 'CL';
-                    $status = strtolower(get_post_meta(get_the_ID(), '_tanah_status', true) ?: 'available');
-                    $thumbnail = get_the_post_thumbnail_url(get_the_ID(), 'medium') ?: get_template_directory_uri() . '/assets/images/placeholder.jpeg';
-            ?>
-                <div class="listing-card" data-title="<?php echo esc_attr(strtolower(get_the_title())); ?>" data-status="<?php echo esc_attr($status); ?>" data-geran="<?php echo esc_attr($geran); ?>">
-                    <div class="listing-image">
-                        <img src="<?php echo esc_url($thumbnail); ?>" alt="<?php echo esc_attr(get_the_title()); ?>">
-                        <span class="listing-status <?php echo esc_attr($status); ?>"><?php echo ucfirst($status); ?></span>
-                    </div>
-                    <div class="listing-content">
-                        <h3><?php the_title(); ?></h3>
-                        <div class="listing-price">RM <?php echo number_format($harga); ?></div>
-                        <div class="listing-meta">
-                            <span><i class="fas fa-expand"></i> <?php echo $ekar; ?> ekar</span>
-                            <span><i class="fas fa-file-alt"></i> <?php echo $geran; ?></span>
-                        </div>
-                        <a href="<?php the_permalink(); ?>" class="listing-btn">Lihat Detail</a>
-                    </div>
-                </div>
-            <?php 
+                    get_template_part('template-parts/card', 'land');
                 endwhile;
                 wp_reset_postdata();
             endif;
