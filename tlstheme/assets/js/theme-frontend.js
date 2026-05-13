@@ -405,6 +405,21 @@
     }
 
     // ============================================
+    // 8. PREMIUM LAND CARDS (3D FLIP)
+    // ============================================
+    
+    function initLandCards() {
+        // Use delegation so it works for cards loaded via AJAX or inside the Map Portal
+        $(document).on('click', '.framer-card-container', function(e) {
+            // Don't flip if clicking the "Lihat Details" button
+            if (e.target.classList.contains('back-cta')) return;
+            
+            const inner = $(this).find('.framer-card-inner');
+            inner.toggleClass('flipped');
+        });
+    }
+
+    // ============================================
     // INITIALIZATION
     // ============================================
 
@@ -413,6 +428,7 @@
         initGallerySlider();
         upgradeMapDesign();
         initScrollInteractions();
+        initLandCards();
         if (document.getElementById('calcPrice')) {
             window.calculateCosts();
         }

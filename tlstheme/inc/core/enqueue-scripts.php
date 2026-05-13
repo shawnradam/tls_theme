@@ -21,6 +21,7 @@ function tls_enqueue_frontend_scripts() {
     wp_enqueue_style('tls-pro-fonts', 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap', [], '1.0.1');
     wp_enqueue_style('google-material-icons', 'https://fonts.googleapis.com/icon?family=Material+Icons', [], null);
     wp_enqueue_style('tls-calculator', get_template_directory_uri() . '/assets/css/calculator.css', [], TLS_VERSION);
+    wp_enqueue_style('tls-land-cards', get_template_directory_uri() . '/assets/css/land-cards.css', [], TLS_VERSION);
 
     // Chart.js for news/blog statistics
     wp_enqueue_script('chartjs', 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js', [], '4.4.0', true);

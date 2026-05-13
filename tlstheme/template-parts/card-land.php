@@ -1,13 +1,3 @@
-<article class="listing-card" 
-    data-id="<?php echo get_the_ID(); ?>" 
-    data-title="<?php echo esc_attr(get_the_title()); ?>"
-    data-price="<?php echo esc_attr(get_post_meta(get_the_ID(), '_tanah_harga', true) ?: 0); ?>"
-    data-geran="<?php echo esc_attr($geran); ?>"
-    data-location="<?php echo esc_attr($location); ?>"
-    data-daerah="<?php echo esc_attr($daerah); ?>"
-    data-town="<?php echo esc_attr($town); ?>"
-    data-geran-display="<?php echo esc_attr($geran_display); ?>"
->
 <?php 
 $geran = get_post_meta(get_the_ID(), '_tanah_jenis_geran', true) ?: 'CL';
 $verified = get_post_meta(get_the_ID(), '_tanah_verified', true) ?: 0;
@@ -20,45 +10,91 @@ $location = $town ?: ($daerah ?: 'Sabah');
 $geran_labels = ['CL' => 'CL', 'NT' => 'NT', 'Development' => 'Phase', 'Hakmilik' => 'Freehold'];
 $geran_display = $geran_labels[$geran] ?? $geran;
 
-$geran_class = 'badge-' . strtolower($geran);
-if ($geran === 'Hakmilik') $geran_class = 'badge-fh';
-if ($geran === 'Development') $geran_class = 'badge-development';
-
 $harga = get_post_meta(get_the_ID(), '_tanah_harga', true) ?: 0;
 $ekar = get_post_meta(get_the_ID(), '_tanah_keluasan', true) ?: 0;
 $sqft = $ekar * 43560;
 $psf = $sqft > 0 ? $harga / $sqft : 0;
 ?>
-    <a href="<?php the_permalink(); ?>" class="listing-image-link">
-        <div class="listing-image">
-            <?php if (has_post_thumbnail()) : ?>
-                <?php the_post_thumbnail('listing-thumb', ['alt' => get_the_title()]); ?>
-            <?php else : ?>
-                <img src="<?php echo get_template_directory_uri(); ?>/assets/images/placeholder.jpeg" alt="Tanah untuk dijual">
-            <?php endif; ?>
-            <div class="listing-badges">
+
+<div class="framer-card-container listing-card" 
+    data-id="<?php echo get_the_ID(); ?>" 
+    data-title="<?php echo esc_attr(get_the_title()); ?>"
+    data-price="<?php echo esc_attr($harga); ?>"
+    data-location="<?php echo esc_attr($location); ?>"
+>
+    <div class="framer-card-inner">
+        <!-- Front -->
+        <div class="framer-card-front">
+            <div class="flip-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M21 21v-5h-5"/></svg>
+            </div>
+            
+            <div class="framer-card-badges">
                 <?php if ($verified): ?>
-                <span class="badge badge-verified" title="Verified Documentation">✓</span>
+                <span class="framer-badge framer-badge-verified">Verified</span>
                 <?php endif; ?>
-                <span class="badge <?php echo esc_attr($geran_class); ?>"><?php echo esc_html($geran_display); ?></span>
-                <span class="badge" style="background: rgba(0,0,0,0.5); color: #fff;"><?php echo esc_html($location); ?></span>
+                <span class="framer-badge"><?php echo esc_html($geran_display); ?></span>
+            </div>
+
+            <div class="framer-card-image">
+                <?php if (has_post_thumbnail()) : ?>
+                    <?php the_post_thumbnail('listing-thumb', ['alt' => get_the_title()]); ?>
+                <?php else : ?>
+                    <img src="<?php echo get_template_directory_uri(); ?>/assets/images/placeholder.jpeg" alt="Tanah untuk dijual">
+                <?php endif; ?>
+                
+                <div class="framer-card-overlay">
+                    <h3 class="framer-card-title"><?php the_title(); ?></h3>
+                    <?php if ($harga > 0): ?>
+                        <div class="framer-card-price">RM <?php echo number_format((int)$harga); ?></div>
+                    <?php endif; ?>
+                    <div class="extra-reveal">
+                        <span><?php echo esc_html($ekar); ?> ekar</span>
+                        <span>•</span>
+                        <span><?php echo esc_html($location); ?></span>
+                    </div>
+                </div>
             </div>
         </div>
-    </a>
-    <div class="listing-body">
-        <?php if ($property_id): ?>
-        <div class="listing-property-id">ID: <?php echo esc_html($property_id); ?></div>
-        <?php endif; ?>
-        <h3 class="listing-card-title"><?php the_title(); ?></h3>
-        <?php if ($harga > 0): ?>
-            <div class="listing-price">RM <?php echo number_format((int)$harga); ?></div>
-            <div class="listing-psf">RM <?php echo number_format($psf, 2); ?>/sqft</div>
-        <?php endif; ?>
-        <div class="listing-meta">
-            <span><?php echo esc_html($ekar); ?> ekar</span>
-            <span>-</span>
-            <span><?php echo esc_html($location); ?></span>
+
+        <!-- Back -->
+        <div class="framer-card-back">
+            <div class="flip-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M21 21v-5h-5"/></svg>
+            </div>
+            
+            <div class="back-header">
+                <div class="back-title">Spesifikasi Tanah</div>
+            </div>
+            
+            <div class="back-specs">
+                <div class="spec-item">
+                    <span class="spec-label">Luas</span>
+                    <span class="spec-value"><?php echo esc_html($ekar); ?> ekar</span>
+                </div>
+                <div class="spec-item">
+                    <span class="spec-label">Jenis Geran</span>
+                    <span class="spec-value"><?php echo esc_html($geran_display); ?></span>
+                </div>
+                <?php if ($psf > 0): ?>
+                <div class="spec-item">
+                    <span class="spec-label">Harga/sqft</span>
+                    <span class="spec-value">RM <?php echo number_format($psf, 2); ?></span>
+                </div>
+                <?php endif; ?>
+                <?php if ($property_id): ?>
+                <div class="spec-item">
+                    <span class="spec-label">ID</span>
+                    <span class="spec-value"><?php echo esc_html($property_id); ?></span>
+                </div>
+                <?php endif; ?>
+            </div>
+            
+            <div class="back-description">
+                <?php echo wp_trim_words(get_the_excerpt(), 25); ?>
+            </div>
+            
+            <a href="<?php the_permalink(); ?>" class="back-cta">Lihat Details</a>
         </div>
-        <a href="<?php the_permalink(); ?>" class="btn btn-detail">Lihat Detail</a>
     </div>
-</article>
+</div>
