@@ -89,9 +89,9 @@ $is_admin = current_user_can('manage_options');
 </div>
 
 <style>
-.dashboard-page { padding: 40px 20px; }
-.dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
-.dashboard-header h1 { font-size: 1.75rem; font-weight: 700; }
+.dashboard-page { padding: 80px 20px 40px; }
+.dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; flex-wrap: wrap; gap: 16px; }
+.dashboard-header h1 { font-size: clamp(1.5rem, 4vw, 1.75rem); font-weight: 700; line-height: 1.3; }
 .header-buttons { display: flex; gap: 12px; align-items: center; }
 .btn-toggle { padding: 10px 20px; background: #f59e0b; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; }
 .btn-toggle:hover { background: #d97706; }
@@ -111,6 +111,12 @@ $is_admin = current_user_can('manage_options');
 
 .dashboard-section { background: #fff; padding: 24px; border-radius: 12px; margin-bottom: 24px; }
 .dashboard-section h2 { font-size: 1.25rem; margin-bottom: 12px; }
+
+@media (max-width: 768px) {
+    .dashboard-page { padding: 80px 16px 32px; }
+    .dashboard-header { margin-bottom: 24px; }
+    .dashboard-header h1 { font-size: 1.3rem; }
+}
 </style>
 
 <?php get_footer(); ?>

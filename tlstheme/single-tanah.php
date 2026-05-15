@@ -107,7 +107,7 @@ add_filter('body_class', function($classes) {
 
                     <div class="single-tanah-badges">
                         <?php if ($verified): ?>
-                        <span class="badge badge-verified">✓ Verified</span>
+                        <span class="badge badge-verified"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Verified</span>
                         <?php endif; ?>
                         <span class="badge <?php echo $geran_class; ?>"><?php echo esc_html($geran); ?></span>
                         <span class="badge badge-zoning"><?php echo esc_html($zoning); ?></span>
@@ -338,18 +338,45 @@ add_filter('body_class', function($classes) {
                         <?php if ($verified): ?>
                         <div class="spec-item">
                             <span class="spec-label">Status</span>
-                            <span class="spec-value verified-badge">Verified ?</span>
+                            <span class="spec-value verified-badge">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                                Verified
+                            </span>
                         </div>
                         <?php endif; ?>
                     </div>
                     
-                    <!-- Advertisement Slot: Local Partner -->
+                    <!-- Partner Tempatan -->
+                    <?php
+                    $tls_partners = get_option('tls_partners', []);
+                    if (!empty($tls_partners) && is_array($tls_partners)) {
+                        $active_partners = array_filter($tls_partners, function($p) { return !empty($p['active']); });
+                        if (!empty($active_partners)):
+                    ?>
                     <div class="ad-partner-slot">
                         <div class="ad-label">Partner Tempatan</div>
+                        <?php foreach ($active_partners as $partner): ?>
                         <div class="ad-content">
-                            <p>Mau bersihkan tanah atau semak sempadan? <a href="#">Hubungi Juruukur Berdaftar</a></p>
+                            <?php if (!empty($partner['name'])): ?>
+                                <strong class="partner-name"><?php echo esc_html($partner['name']); ?></strong>
+                            <?php endif; ?>
+                            <?php if (!empty($partner['description'])): ?>
+                                <p><?php echo esc_html($partner['description']); ?><?php if (!empty($partner['url'])): ?> <a href="<?php echo esc_url($partner['url']); ?>"><?php echo esc_html($partner['name'] ?: 'Hubungi'); ?></a><?php elseif (!empty($partner['phone'])): ?> <a href="https://wa.me/<?php echo esc_attr(preg_replace('/[^0-9]/', '', $partner['phone'])); ?>"><?php echo esc_html($partner['phone']); ?></a><?php endif; ?></p>
+                            <?php elseif (!empty($partner['url'])): ?>
+                                <p><a href="<?php echo esc_url($partner['url']); ?>">Hubungi <?php echo esc_html($partner['name'] ?: 'Partner'); ?></a></p>
+                            <?php elseif (!empty($partner['phone'])): ?>
+                                <p><a href="https://wa.me/<?php echo esc_attr(preg_replace('/[^0-9]/', '', $partner['phone'])); ?>"><?php echo esc_html($partner['phone']); ?></a></p>
+                            <?php endif; ?>
+                            <?php if (empty($partner['description']) && empty($partner['url']) && empty($partner['phone'])): ?>
+                                <p><?php echo esc_html($partner['name'] ?? 'Partner Tempatan'); ?></p>
+                            <?php endif; ?>
                         </div>
+                        <?php endforeach; ?>
                     </div>
+                    <?php
+                        endif;
+                    }
+                    ?>
                     
                     <!-- DUAL CALCULATOR SYSTEM -->
                     <div class="calculator-box" id="calculatorBox">

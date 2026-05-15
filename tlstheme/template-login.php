@@ -50,7 +50,7 @@
     align-items: center;
     justify-content: center;
     background: #f8fafc;
-    padding: 40px 20px;
+    padding: 80px 20px 40px;
 }
 
 .login-container {

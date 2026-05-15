@@ -57,6 +57,7 @@ require_once TLS_THEME_DIR . '/inc/tls-rest-api-user.php';
 require_once TLS_THEME_DIR . '/inc/rest-api/auth-endpoints.php';
 require_once TLS_THEME_DIR . '/inc/ajax/property-crud-ajax.php';
 require_once TLS_THEME_DIR . '/inc/property-management-page.php';
+require_once TLS_THEME_DIR . '/inc/partner-management-page.php';
 
 // AJAX Handlers (replaces lines 22-28, 42-61)
 require_once TLS_THEME_DIR . '/inc/ajax/auth-handlers.php';
@@ -3047,6 +3048,7 @@ add_action('admin_menu', function() {
 
     // Content
     add_submenu_page('tls-dashboard', 'Hero Videos', 'Hero Videos', 'manage_options', 'tls-hero-videos', 'tls_hero_videos_page');
+    add_submenu_page('tls-dashboard', 'Partner Tempatan', 'Partner Tempatan', 'manage_options', 'tls-partners', 'tls_render_partner_page');
 
     // Settings
     add_submenu_page('tls-dashboard', 'Login Security', 'Login Security', 'manage_options', 'tls-login-security', 'tls_login_security_page');

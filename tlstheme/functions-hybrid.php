@@ -50,13 +50,17 @@ function tls_ajax_login() {
         'user_password' => $_POST['password'],
         'remember' => isset($_POST['remember'])
     ];
-    
-    $user = wp_signon($creds, false);
-    
+
+    $secure_cookie = is_ssl();
+
+    $user = wp_signon($creds, $secure_cookie);
+
     if (is_wp_error($user)) {
         wp_send_json_error(['message' => $user->get_error_message()]);
     }
-    
+
+    wp_set_current_user($user->ID);
+
     wp_send_json_success(['redirect' => home_url('/dashboard/'), 'message' => 'Login successful']);
 }
 

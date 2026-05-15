@@ -88,7 +88,7 @@
 
 <style>
 .single-post-article {
-    padding: 40px 0 60px;
+    padding: 80px 0 60px;
     background: #fff;
     min-height: 100vh;
 }
@@ -452,7 +452,7 @@
 /* Mobile */
 @media (max-width: 768px) {
     .single-post-article {
-        padding: 20px 0 40px;
+        padding: 80px 0 40px;
     }
     
     .single-post-image {
@@ -494,10 +494,15 @@
 
 /* Small Mobile */
 @media (max-width: 480px) {
-    .single-post-image {
-        max-height: 200px;
+    .single-post-article {
+        padding: 72px 0 32px;
     }
-    
+
+    .single-post-title {
+        font-size: 1.5rem;
+        line-height: 1.3;
+    }
+
     .single-post-year {
         font-size: 11px;
         padding: 4px 10px;

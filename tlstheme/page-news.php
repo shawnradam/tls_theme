@@ -74,6 +74,7 @@ $news = new WP_Query([
     padding-bottom: 60px;
     background: var(--bg);
     width: 100%;
+    padding-top: 24px;
 }
 
 .news-page-wrapper .container {
@@ -84,14 +85,15 @@ $news = new WP_Query([
 
 .blog-header {
     text-align: center;
-    padding: 40px 0;
+    padding: 72px 0 32px;
 }
 
 .blog-header .section-title {
-    font-size: 2.5rem;
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
     font-weight: 800;
     margin-bottom: 12px;
     color: var(--text);
+    line-height: 1.25;
 }
 
 .blog-header .section-subtitle {
@@ -188,14 +190,16 @@ $news = new WP_Query([
 @media (max-width: 768px) {
     .news-page-wrapper {
         padding-bottom: 40px;
+        padding-top: 0;
     }
     
     .blog-header {
-        padding: 24px 0;
+        padding: 56px 16px 24px;
     }
     
     .blog-header .section-title {
         font-size: 1.6rem;
+        line-height: 1.3;
     }
     
     .blog-header .section-subtitle {
@@ -210,8 +214,17 @@ $news = new WP_Query([
 
 /* Small Mobile */
 @media (max-width: 480px) {
+    .news-page-wrapper {
+        padding-top: 0;
+    }
+
+    .blog-header {
+        padding: 48px 12px 20px;
+    }
+
     .blog-header .section-title {
         font-size: 1.4rem;
+        line-height: 1.3;
     }
     
     .pagination-wrapper a,
