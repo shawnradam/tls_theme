@@ -361,6 +361,68 @@
 <?php wp_footer(); ?>
 
 <script>
+// Theme toggle system
+(function() {
+  var currentTheme = localStorage.getItem('tls-theme') || 'auto';
+
+  function tlsApplyTheme(mode) {
+    var root = document.documentElement;
+    if (mode === 'dark') {
+      root.setAttribute('data-theme', 'dark');
+    } else if (mode === 'auto') {
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        root.setAttribute('data-theme', 'dark');
+      } else {
+        root.removeAttribute('data-theme');
+      }
+    } else {
+      root.removeAttribute('data-theme');
+    }
+    localStorage.setItem('tls-theme', mode);
+    currentTheme = mode;
+    tlsUpdateIcons(mode);
+  }
+
+  function tlsCycleTheme() {
+    var next = currentTheme === 'light' ? 'dark' : currentTheme === 'dark' ? 'auto' : 'light';
+    tlsApplyTheme(next);
+  }
+
+  function tlsUpdateIcons(mode) {
+    document.querySelectorAll('.theme-toggle-btn').forEach(function(btn) {
+      var moon = btn.querySelector('.theme-icon-moon');
+      var sun = btn.querySelector('.theme-icon-sun');
+      var auto = btn.querySelector('.theme-icon-auto');
+      if (moon) moon.style.display = mode === 'light' ? '' : 'none';
+      if (sun) sun.style.display = mode === 'dark' ? '' : 'none';
+      if (auto) auto.style.display = mode === 'auto' ? '' : 'none';
+    });
+  }
+
+  function tlsListenSystem() {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+      if (localStorage.getItem('tls-theme') === 'auto') {
+        if (e.matches) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+          document.documentElement.removeAttribute('data-theme');
+        }
+      }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    tlsUpdateIcons(currentTheme);
+    tlsListenSystem();
+
+    document.querySelectorAll('.theme-toggle-btn').forEach(function(btn) {
+      btn.addEventListener('click', tlsCycleTheme);
+    });
+  });
+})();
+</script>
+
+<script>
 // Click to Reveal Logic (global, available immediately)
 window.tlsRevealContact = function(el, type, encoded) {
     const num = atob(encoded);
