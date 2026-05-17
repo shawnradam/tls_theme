@@ -255,6 +255,53 @@
     color: #000 !important;
 }
 
+/* Dark mode */
+[data-theme="dark"] .framer-card-front,
+[data-theme="dark"] .framer-card-back {
+  background: #1e293b !important;
+}
+
+[data-theme="dark"] .framer-card-back {
+  background: #1e293b !important;
+}
+
+[data-theme="dark"] .framer-card-back .flip-icon {
+  color: #94a3b8 !important;
+  background: rgba(0,0,0,0.3) !important;
+  border-color: rgba(255,255,255,0.1) !important;
+}
+
+[data-theme="dark"] .back-title {
+  color: #e2e8f0 !important;
+}
+
+[data-theme="dark"] .back-header {
+  border-bottom-color: #334155 !important;
+}
+
+[data-theme="dark"] .spec-label {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .spec-value {
+  color: #e2e8f0 !important;
+}
+
+[data-theme="dark"] .back-description {
+  color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .back-cta {
+  background: #22c55e !important;
+  border-color: #22c55e !important;
+  color: #fff !important;
+}
+
+[data-theme="dark"] .back-cta:hover {
+  background: #16a34a !important;
+  color: #fff !important;
+}
+
 /* Responsive Adjustments */
 @media (max-width: 480px) {
     .framer-card-container {

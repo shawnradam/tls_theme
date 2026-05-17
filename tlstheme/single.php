@@ -89,7 +89,7 @@
 <style>
 .single-post-article {
     padding: 80px 0 60px;
-    background: #fff;
+    background: var(--white);
     min-height: 100vh;
 }
 
@@ -132,7 +132,7 @@
 }
 
 .single-post-date {
-    color: #666;
+    color: var(--muted);
     font-size: 0.9rem;
 }
 
@@ -149,7 +149,7 @@
     font-size: 2rem;
     font-weight: 800;
     line-height: 1.3;
-    color: #1a1a1a;
+    color: var(--text);
     margin: 0;
 }
 
@@ -157,7 +157,7 @@
 .single-post-content {
     font-size: 1rem;
     line-height: 1.8;
-    color: #333;
+    color: var(--text);
     margin: 30px 0;
     max-width: 100%;
 }
@@ -171,21 +171,21 @@
 .single-post-content h3 {
     font-size: 1.3rem;
     font-weight: 700;
-    color: #1a1a1a;
+    color: var(--text);
     margin: 24px 0 16px;
 }
 
 .single-post-content h4 {
     font-size: 1.1rem;
     font-weight: 600;
-    color: #1a1a1a;
+    color: var(--text);
     margin: 20px 0 12px;
 }
 
 .single-post-content p {
     margin-bottom: 16px;
     line-height: 1.8;
-    color: #444;
+    color: var(--muted);
 }
 
 /* Ensure ALL divs in content are visible */
@@ -198,9 +198,9 @@
 .news-stats-section {
     margin: 30px 0;
     padding: 24px;
-    background: #f8fafc;
+    background: var(--bg);
     border-radius: 12px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border);
     display: block !important;
     visibility: visible !important;
 }
@@ -212,12 +212,12 @@
 .news-stats-section h3 {
     font-size: 1.25rem;
     font-weight: 700;
-    color: #1a1a1a;
+    color: var(--text);
     margin-bottom: 16px;
 }
 
 .news-stats-section p {
-    color: #444;
+    color: var(--muted);
     line-height: 1.7;
 }
 
@@ -230,8 +230,8 @@
 }
 
 .stat-box {
-    background: #fff;
-    border: 1px solid #e2e8f0;
+    background: var(--white);
+    border: 1px solid var(--border);
     border-radius: 12px;
     padding: 20px 16px;
     text-align: center;
@@ -249,21 +249,21 @@
     display: block;
     font-size: 1.6rem;
     font-weight: 800;
-    color: #1a1a1a;
+    color: var(--text);
     line-height: 1.2;
 }
 
 .stat-label {
     display: block;
     font-size: 0.85rem;
-    color: #666;
+    color: var(--muted);
     margin-top: 4px;
 }
 
 .stat-prev {
     display: block;
     font-size: 0.75rem;
-    color: #888;
+    color: var(--muted);
     margin-top: 4px;
 }
 
@@ -282,12 +282,12 @@
 .single-post-content table td {
     padding: 12px;
     text-align: left;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--border);
 }
 
 .news-stats-section table th,
 .single-post-content table th {
-    background: #f1f5f9;
+    background: var(--bg-light);
     font-weight: 600;
 }
 
@@ -302,13 +302,13 @@
 .single-post-content li {
     margin-bottom: 10px;
     line-height: 1.7;
-    color: #444;
+    color: var(--muted);
 }
 
 /* Chart Container */
 .stats-chart-container {
-    background: #fff;
-    border: 1px solid #e2e8f0;
+    background: var(--white);
+    border: 1px solid var(--border);
     border-radius: 12px;
     padding: 20px;
     margin: 24px 0;
@@ -323,7 +323,7 @@
 .single-post-footer {
     margin-top: 40px;
     padding-top: 30px;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--border);
 }
 
 .single-post-tags {
@@ -336,12 +336,12 @@
 
 .tags-label {
     font-weight: 600;
-    color: #666;
+    color: var(--muted);
 }
 
 .tag-link {
-    background: #f1f5f9;
-    color: #333;
+    background: var(--bg-light);
+    color: var(--text);
     padding: 6px 12px;
     border-radius: 20px;
     font-size: 13px;
@@ -379,13 +379,13 @@
 .related-posts-section {
     margin-top: 50px;
     padding-top: 40px;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--border);
 }
 
 .related-posts-section h2 {
     font-size: 1.5rem;
     margin-bottom: 24px;
-    color: #1a1a1a;
+    color: var(--text);
 }
 
 .related-posts-grid {
@@ -395,7 +395,7 @@
 }
 
 .related-post-card {
-    background: #fff;
+    background: var(--white);
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
@@ -427,14 +427,14 @@
 
 .related-post-date {
     font-size: 12px;
-    color: #666;
+    color: var(--muted);
 }
 
 .related-post-info h3 {
     font-size: 0.95rem;
     font-weight: 600;
     margin: 8px 0 0;
-    color: #1a1a1a;
+    color: var(--text);
     line-height: 1.4;
 }
 
